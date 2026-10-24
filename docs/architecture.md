@@ -12,7 +12,7 @@ anti-smith is a small engine plus many independent plugins. The engine knows not
              │   │ detector │────────────────▶│  findings    │      │ responder │ onScore()
              │   └──────────┘                 │  scoring     │      └───────────┘
              │        ▲ ctx.on / observe…     │  event log ──┼──▶ ┌──────┐
-             │        │                        │  ownership   │    │ sink │ onEvent() ──▶ POST /log
+             │        │                       │  ownership   │    │ sink │ onEvent() ──▶ POST /log
              │      DOM, events, APIs         └──────────────┘    └──────┘
              └────────────────────────────────────────────────────────────────┘
 ```
