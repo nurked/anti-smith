@@ -3,7 +3,7 @@
 anti-smith is a small engine plus many independent plugins. The engine knows nothing about specific agents; every way of spotting or handling an agent is a plugin, so new techniques land as new folders, not as edits to shared code.
 
 ```
-             ┌──────────────────────────── page ─────────────────────────────┐
+             ┌──────────────────────────── page ───────────────────-──────────┐
              │                                                                │
  plugins/    │   ┌──────────┐ report/escalate ┌──────────────┐  score         │
  detectors/* ├──▶│ detector │────────────────▶│              │──────────────┐ │
@@ -11,9 +11,9 @@ anti-smith is a small engine plus many independent plugins. The engine knows not
              │   ┌──────────┐     ctx.log     │  (core)      │      ┌───────────┐
              │   │ detector │────────────────▶│  findings    │      │ responder │ onScore()
              │   └──────────┘                 │  scoring     │      └───────────┘
-             │        ▲ ctx.on / observe…     │  event log ──┼──▶ ┌──────┐
+             │        ▲ ctx.on / observe…     │  event log ──┼──▶ ┌──────┐.   │
              │        │                       │  ownership   │    │ sink │ onEvent() ──▶ POST /log
-             │      DOM, events, APIs         └──────────────┘    └──────┘
+             │      DOM, events, APIs         └──────────────┘    └──────┘.   │
              └────────────────────────────────────────────────────────────────┘
 ```
 
