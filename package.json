@@ -13,7 +13,7 @@
   "scripts": {
     "start": "node apps/lab/server.mjs",
     "test": "node --test",
-    "check": "node tools/check-plugins.mjs",
+    "check": "node tools/check-plugins.mjs && node tools/check-lists.mjs",
     "verify": "npm run check && npm test",
     "new-plugin": "node tools/new-plugin.mjs"
   }

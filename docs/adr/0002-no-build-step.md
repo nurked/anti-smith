@@ -15,5 +15,5 @@ The lab spec asked for plain JavaScript with no build step and no CDN. The proje
 ## Consequences
 
 - `npm install` is not needed to run, test or develop.
-- A single-file artifact is a later, optional build output (see roadmap), not the source of truth.
+- No single-file artifact: the "one HTML file" idea from the original lab spec was dropped on 2026-10-24. The lab is served from source.
 - No TypeScript for now; types are documented in docs/plugin-api.md. Revisit when the `ctx` API settles.

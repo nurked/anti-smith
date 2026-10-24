@@ -36,6 +36,8 @@ export const WEIGHTS = Object.freeze(['strong', 'medium', 'weak']);
 
 const ID_PATTERN = /^(detector|responder|sink)\.[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const SEMVER_PATTERN = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
+/** "<list-name>" or "<list-name>.<key>[.<key>…]" — see lists/README.md. */
+export const LIST_PATH_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[A-Za-z0-9_]+)*$/;
 
 /**
  * Returns a list of human-readable problems with a plugin object.
@@ -70,6 +72,12 @@ export function validatePlugin(plugin) {
   }
   if (plugin.tags !== undefined && !isStringArray(plugin.tags)) {
     problems.push('tags must be an array of strings');
+  }
+  if (plugin.lists !== undefined) {
+    const entries = plugin.lists && typeof plugin.lists === 'object' ? Object.entries(plugin.lists) : null;
+    if (!entries || entries.some(([, path]) => typeof path !== 'string' || !LIST_PATH_PATTERN.test(path))) {
+      problems.push('lists must map config keys to list paths like "automation-globals.names"');
+    }
   }
 
   if (kind === 'detector') {

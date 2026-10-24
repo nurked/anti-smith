@@ -15,6 +15,7 @@ export default {
   weight: 'medium',
   phase: 'runtime',
   tags: ['dom', 'extension', 'overlay'],
+  lists: { attributePatterns: 'dom-attribute-patterns' },
   limitations: [
     'Many ordinary extensions (password managers, Grammarly, translators, ad blockers) inject DOM too, so this tops out at suspicious.',
     'Closed shadow roots and shadow roots attached from an isolated world are not visible; only main-world attachShadow calls are observed.',

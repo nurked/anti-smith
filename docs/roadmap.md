@@ -7,7 +7,6 @@
 - [x] Lab page and local server with JSON-lines log, honeypot and canary endpoints
 - [x] Contract checker, scaffolder, generated catalog, unit tests
 - [x] Claude for Chrome extension ID and web-accessible paths configured (refresh the hashed paths on each release)
-- [ ] Single-file build (`dist/agent-lab.html`) for the original "one HTML file" deliverable: concatenate core and plugins (plugins have no imports, so this is a small script)
 
 ## Phase 1 — Measurement
 
@@ -19,7 +18,7 @@
 
 ## Phase 2 — Signal lists and server side
 
-- [ ] `lists/` — versioned signal data (automation globals, stack markers, extension IDs, attribute patterns, renderer names), loaded by plugins instead of hard-coded defaults; separate review track like filter lists
+- [x] `lists/` — versioned signal data (automation globals, stack markers, agent extensions, attribute patterns, renderer names) feeding plugin config; own owners and checks
 - [ ] `packages/server` — Node middleware: Web Bot Auth verification, header/TLS fingerprint capture, correlation with client sessions
 - [ ] Server-side canary scanning for form posts and support channels
 

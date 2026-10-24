@@ -1,0 +1,16 @@
+{
+  "name": "stack-markers",
+  "version": "2026.10.24",
+  "description": "Substrings in JavaScript stack traces that identify automation frameworks or extension code calling page APIs.",
+  "data": [
+    "__puppeteer_evaluation_script__",
+    "pptr:",
+    "UtilityScript",
+    "__playwright",
+    "playwright",
+    "selenium",
+    "webdriver",
+    "chrome-extension://",
+    "moz-extension://"
+  ]
+}

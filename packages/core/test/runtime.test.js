@@ -96,6 +96,24 @@ test('config merges plugin defaults with per-plugin overrides', async () => {
   assert.deepEqual({ ...seen }, { a: 1, b: 3 });
 });
 
+test('lists fill config between plugin defaults and host config', async () => {
+  let seen;
+  const detector = meta('detector.listed', 'detector', {
+    defaults: { names: ['default'], prefixes: ['default'], other: 1 },
+    lists: { names: 'globals.names', prefixes: 'globals.prefixes', missing: 'nope.key' },
+    start: (ctx) => void (seen = ctx.config),
+  });
+  const runtime = createRuntime({
+    plugins: [detector],
+    window: fakeWindow(),
+    lists: { globals: { version: '2026.10.24', data: { names: ['from-list'], prefixes: ['from-list'] } } },
+    config: { plugins: { 'detector.listed': { prefixes: ['from-host'] } } },
+  });
+  await runtime.start();
+  assert.deepEqual({ ...seen }, { names: ['from-list'], prefixes: ['from-host'], other: 1 });
+  assert.deepEqual(runtime.log.all()[0].data.lists, { globals: '2026.10.24' });
+});
+
 test('observeCall watches without changing behaviour and restores on stop', async () => {
   const target = { add: (a, b) => a + b };
   const original = target.add;

@@ -11,6 +11,7 @@ export default {
   weight: 'medium',
   phase: 'static',
   tags: ['headless', 'fingerprint'],
+  lists: { softRenderers: 'software-renderers' },
   limitations: [
     'New headless Chrome (--headless=new) and stealth plugins fix most of these.',
     'Software WebGL (SwiftShader, llvmpipe) also appears in VMs, remote desktops and GPU-blocklisted machines.',

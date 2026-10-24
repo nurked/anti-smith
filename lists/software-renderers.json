@@ -1,0 +1,12 @@
+{
+  "name": "software-renderers",
+  "version": "2026.10.24",
+  "description": "WebGL renderer names that indicate software rendering (headless, VMs, remote desktops).",
+  "data": [
+    "SwiftShader",
+    "llvmpipe",
+    "softpipe",
+    "Mesa OffScreen",
+    "Google SwiftShader"
+  ]
+}

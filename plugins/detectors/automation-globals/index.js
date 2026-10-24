@@ -13,6 +13,7 @@ export default {
   weight: 'strong',
   phase: 'static',
   tags: ['automation', 'playwright', 'puppeteer', 'selenium'],
+  lists: { names: 'automation-globals.names', prefixes: 'automation-globals.prefixes', documentAttributes: 'automation-globals.documentAttributes' },
   limitations: [
     'Only sees the main world: anything a framework keeps in an isolated world (Playwright utility world, extension content scripts) is invisible.',
     'Patched ChromeDriver builds rename the cdc_ variables; stealth tooling removes the rest.',

@@ -1,0 +1,17 @@
+{
+  "name": "agent-extensions",
+  "version": "2026.10.24",
+  "description": "Browser extensions that act as AI agents, with web-accessible resources a page can probe. Hashed paths change with each release.",
+  "data": [
+    {
+      "name": "Claude for Chrome",
+      "extensionId": "fcoeoabgfenejglbffodgkkbkcdhcgfn",
+      "resourcePaths": [
+        "assets/agent-visual-indicator.js-uaVFxZ2f.js",
+        "assets/accessibility-tree.js-B-oUarrX.js"
+      ],
+      "version": "1.0.102",
+      "source": "manifest web_accessible_resources, use_dynamic_url: false"
+    }
+  ]
+}

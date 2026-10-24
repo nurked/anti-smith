@@ -21,6 +21,7 @@ export default {
   weight: 'medium',
   phase: 'runtime',
   tags: ['scraping', 'dom', 'privacy'],
+  lists: { stackMarkers: 'stack-markers' },
   limitations: [
     'Only catches scripts in the page main world. Isolated-world content scripts and CDP DOM/accessibility/screenshot reads are invisible.',
     'Page code (analytics, session replay, rich-text editors) reading the same content will trip it; list known callers in allowStackPatterns.',

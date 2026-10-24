@@ -30,7 +30,9 @@ let renderQueued = false;
 main().catch((error) => showErrors([{ id: 'lab', message: error?.stack ?? String(error) }]));
 
 async function main() {
-  const entries = await (await fetch('/api/plugins', { cache: 'no-store' })).json();
+  const [entries, lists] = await Promise.all(
+    ['/api/plugins', '/api/lists'].map((url) => fetch(url, { cache: 'no-store' }).then((res) => res.json())),
+  );
   // ?only= narrows detectors; sinks and responders always load unless skipped.
   const chosen = entries.filter((e) => !skip.has(e.id) && (!only.length || e.kind !== 'detector' || only.includes(e.id)));
 
@@ -46,7 +48,7 @@ async function main() {
   });
   showErrors(errors);
 
-  runtime = createRuntime({ plugins, config });
+  runtime = createRuntime({ plugins, config, lists });
   // Lab only: exposed for debugging from the console. Never expose the runtime on a production page.
   window.antiSmith = runtime;
 

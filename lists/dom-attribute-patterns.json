@@ -1,0 +1,10 @@
+{
+  "name": "dom-attribute-patterns",
+  "version": "2026.10.24",
+  "description": "Regular expressions for attribute names that agent tooling adds to page elements.",
+  "data": [
+    "^data-(?:pw|playwright|agent|ref|claude|browser-use|highlight)",
+    "^__",
+    "^cdp"
+  ]
+}

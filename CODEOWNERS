@@ -8,6 +8,7 @@
 /docs/adr/                @anti-smith/core
 /docs/research.md         @anti-smith/research
 /docs/test-plan.md        @anti-smith/research
+/lists/                   @anti-smith/lists
 
 # Plugins: add the author's handle per folder, e.g.
 # /plugins/detectors/mouse-dynamics/   @someone

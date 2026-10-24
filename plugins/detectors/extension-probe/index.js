@@ -20,6 +20,7 @@ export default {
   weight: 'medium',
   phase: 'static',
   tags: ['extension', 'fingerprint'],
+  lists: { extensions: 'agent-extensions' },
   limitations: [
     'Installed is not the same as active: the person may have the extension but not be using it right now.',
     'Manifest V3 extensions can set use_dynamic_url, which makes resource URLs unguessable; extensions without web-accessible resources cannot be probed.',

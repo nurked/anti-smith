@@ -4,6 +4,7 @@
  *
  *   GET  /                 → redirect to the lab page
  *   GET  /api/plugins      → every plugin entry point found under plugins/
+ *   GET  /api/lists        → every signal list under lists/, { [name]: { version, data } }
  *   POST /log              → append { sessionId, events } as JSON lines to var/detections.log
  *   GET  /__as_trap/*      → honeypot target: log the hit, answer 204 (no navigation)
  *   GET  /apps|packages|plugins/...  → static files
@@ -19,6 +20,7 @@ import { readFile, appendFile, mkdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { discoverPlugins } from '../../tools/lib/discover-plugins.mjs';
+import { loadLists } from '../../tools/lib/load-lists.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const HOST = process.env.HOST ?? '127.0.0.1';
@@ -48,6 +50,7 @@ const server = http.createServer(async (req, res) => {
     }
     if (req.method === 'GET' && url.pathname === '/') return redirect(res, '/apps/lab/');
     if (req.method === 'GET' && url.pathname === '/api/plugins') return json(res, await pluginList());
+    if (req.method === 'GET' && url.pathname === '/api/lists') return json(res, await loadLists(ROOT));
     if (req.method === 'POST' && url.pathname === '/log') return await handleLog(req, res);
     if (url.pathname.startsWith('/__as_trap/')) {
       await writeLines([{ kind: 'trap-hit', path: url.pathname, query: url.search, ...seen(req) }]);

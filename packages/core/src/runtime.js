@@ -18,6 +18,7 @@ const START_ORDER = ['sink', 'responder', 'detector'];
  * @param {object} options
  * @param {object[]} options.plugins   Plugin objects (module default exports).
  * @param {object}   [options.config]  { plugins: { [id]: config }, scoring, logLimit, ownership, sessionId }
+ * @param {object}   [options.lists]   Signal lists, { [name]: { version, data } } (see lists/README.md)
  * @param {object}   [options.window]  Defaults to the global window. Tests pass fakes.
  * @param {object}   [options.document]
  * @param {Function} [options.scorer]  (findings, scoringConfig) => { score, level, contributors }
@@ -27,6 +28,7 @@ export function createRuntime(options = {}) {
   const win = options.window ?? globalThis.window ?? globalThis;
   const doc = options.document ?? win.document ?? null;
   const config = options.config ?? {};
+  const lists = options.lists ?? {};
   const scorer = options.scorer ?? scoreFindings;
   const natives = captureNatives(win);
   const clock = options.now ?? natives.now;
@@ -137,6 +139,24 @@ export function createRuntime(options = {}) {
     };
   }
 
+  // ------------------------------------------------------------------ lists
+
+  /** "automation-globals.names" → lists['automation-globals'].data.names, or undefined. */
+  function resolveList(path) {
+    const [name, ...keys] = path.split('.');
+    return keys.reduce((value, key) => (value == null ? undefined : value[key]), lists[name]?.data);
+  }
+
+  /** Config values a plugin takes from lists. Precedence: plugin defaults < lists < host config. */
+  function fromLists(plugin) {
+    const values = {};
+    for (const [key, path] of Object.entries(plugin.lists ?? {})) {
+      const value = resolveList(path);
+      if (value !== undefined) values[key] = value;
+    }
+    return values;
+  }
+
   // ---------------------------------------------------------------- context
 
   function makeContext(plugin) {
@@ -146,7 +166,7 @@ export function createRuntime(options = {}) {
     const ctx = {
       id: plugin.id,
       sessionId,
-      config: Object.freeze({ ...(plugin.defaults ?? {}), ...(config.plugins?.[plugin.id] ?? {}) }),
+      config: Object.freeze({ ...(plugin.defaults ?? {}), ...fromLists(plugin), ...(config.plugins?.[plugin.id] ?? {}) }),
       /** Mutable per-plugin, per-runtime scratch space. Keep state here, not in module scope. */
       state: {},
       window: win,
@@ -288,6 +308,7 @@ export function createRuntime(options = {}) {
       sessionId,
       plugins: active.map((p) => `${p.id}@${p.version}`),
       disabled,
+      lists: Object.fromEntries(Object.entries(lists).map(([name, list]) => [name, list?.version ?? null])),
       url: win.location?.href ?? null,
       userAgent: win.navigator?.userAgent ?? null,
     });
@@ -342,7 +363,7 @@ export function createRuntime(options = {}) {
 
   function pluginMeta(plugin) {
     const { id, kind, version, title, description, weight, phase, tags, noisy, limitations } = plugin;
-    return { id, kind, version, title, description, weight, phase, tags, noisy: Boolean(noisy), limitations, enabled: isEnabled(plugin) };
+    return { id, kind, version, title, description, weight, phase, tags, noisy: Boolean(noisy), limitations, lists: plugin.lists, enabled: isEnabled(plugin) };
   }
 
   function snapshot() {

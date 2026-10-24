@@ -1,0 +1,48 @@
+{
+  "name": "automation-globals",
+  "version": "2026.10.24",
+  "description": "Window/document properties and <html> attributes left by automation frameworks (Playwright, Puppeteer, ChromeDriver/Selenium, PhantomJS, Nightmare).",
+  "data": {
+    "names": [
+      "__playwright__binding__",
+      "__pwInitScripts",
+      "__puppeteer_evaluation_script__",
+      "_selenium",
+      "callSelenium",
+      "_Selenium_IDE_Recorder",
+      "__webdriver_evaluate",
+      "__selenium_evaluate",
+      "__webdriver_script_function",
+      "__webdriver_script_func",
+      "__webdriver_script_fn",
+      "__fxdriver_evaluate",
+      "__driver_unwrapped",
+      "__webdriver_unwrapped",
+      "__driver_evaluate",
+      "__selenium_unwrapped",
+      "__fxdriver_unwrapped",
+      "_WEBDRIVER_ELEM_CACHE",
+      "callPhantom",
+      "_phantom",
+      "__nightmare",
+      "domAutomation",
+      "domAutomationController"
+    ],
+    "prefixes": [
+      "cdc_",
+      "$cdc_",
+      "$wdc_",
+      "__playwright",
+      "__pw_",
+      "__puppeteer",
+      "__selenium",
+      "__webdriver",
+      "__nightmare"
+    ],
+    "documentAttributes": [
+      "webdriver",
+      "selenium",
+      "driver"
+    ]
+  }
+}
