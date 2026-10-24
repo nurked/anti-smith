@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en" data-default-protection="3" data-loaded-via="server-side injection (/crm-edge/)">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tickets · Northwind CRM</title>
+    <link rel="stylesheet" href="/apps/crm/crm.css" />
+    <script src="/apps/crm/level.js"></script>
+  </head>
+  <body>
+    <header class="crm-header">
+      <a class="brand" href="/apps/crm/">Northwind CRM</a>
+      <nav aria-label="Main">
+        <a href="/apps/crm/">Dashboard</a>
+        <a href="/apps/crm/contacts.html">Contacts</a>
+        <a href="/apps/crm/deals.html">Deals</a>
+        <a href="/crm-edge/tickets.html" aria-current="page">Tickets</a>
+      </nav>
+      <div class="levels" aria-label="Protection level (testing)">
+        Protection:
+        <a href="?level=default" data-level="default">page default</a>
+        <a href="?level=0" data-level="0">0 off</a>
+        <a href="?level=1" data-level="1">1 banner</a>
+        <a href="?level=2" data-level="2">2 lockout</a>
+        <a href="?level=3" data-level="3">3 notice</a>
+      </div>
+    </header>
+    <main data-as-protected>
+      <p class="how">This page has no anti-smith code. When served from /crm-edge/, the server injects the bootstrap into the HTML (the edge / reverse-proxy method). Served from /apps/crm/tickets.html it is unprotected, for comparison. Default protection level: 3 (banner + lockout + agent notice).</p>
+      <h1>Support tickets</h1>
+      <div class="table-wrap">
+        <table data-as-sensitive>
+          <thead><tr><th>#</th><th>Customer</th><th>Subject</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>2201</td><td>Avery Example</td><td>Cannot export fleet report</td><td><span class="status">Open</span></td></tr>
+            <tr><td>2203</td><td>Drew Notreal</td><td>Billing dispute: duplicate charge</td><td><span class="status">Escalated</span></td></tr>
+            <tr><td>2204</td><td>Taylor Mockwell</td><td>Patient intake form fields missing</td><td><span class="status">Open</span></td></tr>
+            <tr><td>2207</td><td>Jamie Fixture</td><td>Data export for audit (all records)</td><td><span class="status">Open</span></td></tr>
+            <tr><td>2209</td><td>Riley Placeholder</td><td>Payment plan confirmation</td><td><span class="status">Waiting</span></td></tr>
+            <tr><td>2210</td><td>Morgan Testcase</td><td>Update contact person during leave</td><td><span class="status">Closed</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h2>Reply to #2207</h2>
+      <form id="reply" onsubmit="event.preventDefault(); this.querySelector('output').value = 'Saved locally (nothing is sent).';">
+        <textarea name="reply" rows="4" placeholder="Write a reply…"></textarea>
+        <p><button type="submit">Send reply</button> <output data-as-ignore></output></p>
+      </form>
+    </main>
+    <footer id="crm-debug">anti-smith not loaded yet</footer>
+    <script type="module">
+      import { showDebug } from '/apps/crm/boot.js';
+      document.addEventListener('anti-smith:ready', (event) => showDebug(event.detail), { once: true });
+    </script>
+  </body>
+</html>

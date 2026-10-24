@@ -6,3 +6,4 @@ export { createSessionStore } from './sessions.js';
 export { parseDictionary, parseItemValue } from './structured-fields.js';
 export { createStepUp, createCredentialStore, coseToJwk } from './webauthn.js';
 export { decodeCbor } from './cbor.js';
+export { injectIntoHtml, bootstrapSnippet } from './inject.js';

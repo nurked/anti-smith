@@ -31,6 +31,7 @@
 - [x] `responder.step-up` + server WebAuthn (ES256/EdDSA, UV required, single-use challenges, counters); `tools/harness/step-up-check.mjs` shows a virtual authenticator cannot pass for a registered credential
 - [x] `responder.notify-server` — flags the session server-side at each new level
 - [x] Policy: responders opt-in, behaviour adds friction only ([ADR 0005](adr/0005-responders-opt-in.md))
+- [x] Protection levels 1–3 (`agent-banner`, `lockout`, `agent-notice`) with a human verify path ([ADR 0006](adr/0006-protection-levels.md)); Northwind CRM test site with five integration methods
 - [ ] Deny responder for deterministic signals (signed agent on a deny-list, honeypot hit, untrusted events on sensitive actions)
 - [ ] Assistive-technology runs before enabling redaction anywhere real
 

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en" data-default-protection="2" data-loaded-via="script tag + shared JSON config">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Contacts · Northwind CRM</title>
+    <link rel="stylesheet" href="/apps/crm/crm.css" />
+    <script src="/apps/crm/level.js"></script>
+    <!-- Integration method: a plain script tag and a config block pointing at the shared site config. -->
+    <script type="application/json" id="anti-smith-config" data-src="/apps/crm/anti-smith.json">{}</script>
+    <script type="module" src="/packages/embed/src/auto.js"></script>
+  </head>
+  <body>
+    <header class="crm-header">
+      <a class="brand" href="/apps/crm/">Northwind CRM</a>
+      <nav aria-label="Main">
+        <a href="/apps/crm/">Dashboard</a>
+        <a href="/apps/crm/contacts.html" aria-current="page">Contacts</a>
+        <a href="/apps/crm/deals.html">Deals</a>
+        <a href="/crm-edge/tickets.html">Tickets</a>
+      </nav>
+      <div class="levels" aria-label="Protection level (testing)">
+        Protection:
+        <a href="?level=default" data-level="default">page default</a>
+        <a href="?level=0" data-level="0">0 off</a>
+        <a href="?level=1" data-level="1">1 banner</a>
+        <a href="?level=2" data-level="2">2 lockout</a>
+        <a href="?level=3" data-level="3">3 notice</a>
+      </div>
+    </header>
+    <main data-as-protected>
+      <p class="how">This page loads anti-smith with a plain &lt;script&gt; tag and a JSON config block (shared site config). Default protection level: 2 (banner + content lockout).</p>
+      <h1>Contacts</h1>
+      <div class="table-wrap">
+        <table id="contacts" data-as-sensitive>
+          <thead>
+            <tr><th>Name</th><th>Company</th><th>Email</th><th>Phone</th><th>Date of birth</th><th>National ID</th><th>Status</th><th>Owner</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="/apps/crm/contact.html?id=1">Avery Example</a></td><td>Lumen Freight</td><td>avery@example.com</td><td>+1 555-0101</td><td>1984-03-12</td><td>000-12-3456</td><td><span class="status">Customer</span></td><td>Dana</td></tr>
+            <tr><td><a href="/apps/crm/contact.html?id=2">Jordan Sample</a></td><td>Brightwater Dental</td><td>jordan@example.com</td><td>+1 555-0102</td><td>1979-11-02</td><td>000-98-7654</td><td><span class="status">Lead</span></td><td>Lee</td></tr>
+            <tr><td><a href="/apps/crm/contact.html?id=3">Riley Placeholder</a></td><td>Northgate Bakery</td><td>riley@example.com</td><td>+1 555-0103</td><td>1991-07-27</td><td>000-45-6789</td><td><span class="status">Customer</span></td><td>Dana</td></tr>
+            <tr><td><a href="/apps/crm/contact.html?id=4">Morgan Testcase</a></td><td>Testcase Legal LLP</td><td>morgan@example.com</td><td>+1 555-0104</td><td>1966-01-30</td><td>000-11-2233</td><td><span class="status">Customer</span></td><td>Sam</td></tr>
+            <tr><td><a href="/apps/crm/contact.html?id=5">Casey Dummy</a></td><td>Dummy &amp; Daughters</td><td>casey@example.com</td><td>+1 555-0105</td><td>1988-05-19</td><td>000-22-3344</td><td><span class="status">Churned</span></td><td>Lee</td></tr>
+            <tr><td><a href="/apps/crm/contact.html?id=6">Taylor Mockwell</a></td><td>Mockwell Clinics</td><td>taylor@example.com</td><td>+1 555-0106</td><td>1975-09-08</td><td>000-33-4455</td><td><span class="status">Customer</span></td><td>Sam</td></tr>
+            <tr><td><a href="/apps/crm/contact.html?id=7">Quinn Fakeington</a></td><td>Fakeington Energy</td><td>quinn@example.com</td><td>+1 555-0107</td><td>1993-12-01</td><td>000-44-5566</td><td><span class="status">Lead</span></td><td>Dana</td></tr>
+            <tr><td><a href="/apps/crm/contact.html?id=8">Drew Notreal</a></td><td>Notreal Insurance</td><td>drew@example.com</td><td>+1 555-0108</td><td>1982-02-14</td><td>000-55-6677</td><td><span class="status">Customer</span></td><td>Lee</td></tr>
+            <tr><td><a href="/apps/crm/contact.html?id=9">Sam Specimen</a></td><td>Specimen Labs</td><td>sam@example.com</td><td>+1 555-0109</td><td>1990-06-23</td><td>000-66-7788</td><td><span class="status">Lead</span></td><td>Sam</td></tr>
+            <tr><td><a href="/apps/crm/contact.html?id=10">Robin Sandbox</a></td><td>Sandbox Schools</td><td>robin@example.com</td><td>+1 555-0110</td><td>1970-10-10</td><td>000-77-8899</td><td><span class="status">Customer</span></td><td>Dana</td></tr>
+            <tr><td><a href="/apps/crm/contact.html?id=11">Jamie Fixture</a></td><td>Fixture Hotels</td><td>jamie@example.com</td><td>+1 555-0111</td><td>1986-04-04</td><td>000-88-9900</td><td><span class="status">Customer</span></td><td>Lee</td></tr>
+            <tr><td><a href="/apps/crm/contact.html?id=12">Alex Stubbs</a></td><td>Stubbs Logistics</td><td>alex@example.com</td><td>+1 555-0112</td><td>1979-08-18</td><td>000-99-0011</td><td><span class="status">Lead</span></td><td>Sam</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+    <footer id="crm-debug">anti-smith not loaded yet</footer>
+    <script type="module">
+      import { showDebug } from '/apps/crm/boot.js';
+      document.addEventListener('anti-smith:ready', (event) => showDebug(event.detail), { once: true });
+    </script>
+  </body>
+</html>

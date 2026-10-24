@@ -1,0 +1,238 @@
+:root {
+  --bg: #f4f5f7;
+  --panel: #ffffff;
+  --text: #1c2025;
+  --muted: #5d6875;
+  --border: #dfe3e8;
+  --brand: #2b5bd7;
+  --brand-ink: #ffffff;
+  --won: #1f8a4c;
+  --lost: #b42318;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #101317;
+    --panel: #181c22;
+    --text: #e7eaee;
+    --muted: #97a2b0;
+    --border: #2b323c;
+    --brand: #7b9bff;
+    --brand-ink: #0b1020;
+    --won: #4cc38a;
+    --lost: #ff8a80;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+a {
+  color: var(--brand);
+}
+
+.crm-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  align-items: center;
+  padding: 10px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.crm-header .brand {
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.crm-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
+.crm-header nav a {
+  text-decoration: none;
+  color: var(--muted);
+}
+
+.crm-header nav a[aria-current='page'] {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.levels {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.levels a {
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--muted);
+}
+
+html[data-as-protection='0'] .levels a[data-level='0'],
+html[data-as-protection='1'] .levels a[data-level='1'],
+html[data-as-protection='2'] .levels a[data-level='2'],
+html[data-as-protection='3'] .levels a[data-level='3'] {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--brand-ink);
+}
+
+main {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.how {
+  font-size: 13px;
+  color: var(--muted);
+  border-left: 3px solid var(--brand);
+  padding: 4px 10px;
+  margin: 0 0 16px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.card .big {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+th {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+dl.fields {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 16px;
+  margin: 0;
+}
+
+dl.fields dt {
+  color: var(--muted);
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.column h3 {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+
+.deal {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 8px;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 1px solid var(--brand);
+  background: var(--brand);
+  color: var(--brand-ink);
+  padding: 6px 12px;
+}
+
+button.secondary {
+  background: transparent;
+  color: var(--brand);
+}
+
+textarea,
+input[type='text'],
+input[type='search'] {
+  font: inherit;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.status {
+  font-size: 12px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+}
+
+#crm-debug {
+  max-width: 1080px;
+  margin: 24px auto;
+  padding: 8px 16px;
+  font: 12px/1.4 ui-monospace, Menlo, monospace;
+  color: var(--muted);
+}

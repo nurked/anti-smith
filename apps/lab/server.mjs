@@ -10,6 +10,8 @@
  *   POST /api/flag         → session flags (responder.notify-server)  ├ handled by @anti-smith/server
  *   POST /api/step-up/*    → WebAuthn step-up (responder.step-up)     │
  *   *    /__as_trap/*      → honeypot targets, 204                    ┘
+ *   GET  /crm-edge/*       → the fake CRM (apps/crm) with anti-smith injected into every HTML page,
+ *                            the way an edge proxy would add it to an app that has no integration
  *   GET  /apps|packages|plugins/...  → static files
  *
  * Every request is also inspected by @anti-smith/server: Web Bot Auth
@@ -22,7 +24,7 @@ import http from 'node:http';
 import { readFile, appendFile, mkdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createAntiSmithHandler, createStepUp } from '../../packages/server/src/index.js';
+import { createAntiSmithHandler, createStepUp, injectIntoHtml, bootstrapSnippet } from '../../packages/server/src/index.js';
 import { discoverPlugins } from '../../tools/lib/discover-plugins.mjs';
 import { loadLists } from '../../tools/lib/load-lists.mjs';
 
@@ -70,6 +72,8 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/api/lists') return json(res, await loadLists(ROOT));
     if (url.pathname === '/api/sessions') return json(res, antiSmith.store.list());
     if (url.pathname === '/favicon.ico') return end(res, 204);
+    if (url.pathname === '/crm' || url.pathname === '/crm/') return redirect(res, '/apps/crm/');
+    if (url.pathname.startsWith('/crm-edge/')) return await serveEdge(url.pathname.slice('/crm-edge/'.length), res);
     if (STATIC_PREFIXES.some((prefix) => url.pathname.startsWith(prefix))) return await serveStatic(url.pathname, res);
     return end(res, 404, 'Not found');
   } catch (error) {
@@ -85,6 +89,27 @@ server.listen(PORT, HOST, () => {
 
 async function pluginList() {
   return (await discoverPlugins(ROOT)).map(({ id, kind, urlPath }) => ({ id, kind, path: urlPath }));
+}
+
+// Edge injection: same files as /apps/crm/, but HTML gets the bootstrap added on the way out.
+const EDGE_SNIPPET = bootstrapSnippet({ autoUrl: '/packages/embed/src/auto.js', configUrl: '/apps/crm/anti-smith.json' });
+
+async function serveEdge(rel, res) {
+  const base = path.join(ROOT, 'apps', 'crm');
+  const file = path.resolve(base, rel || 'index.html');
+  if (!file.startsWith(base + path.sep)) return end(res, 403, 'Forbidden');
+  let body;
+  try {
+    body = await readFile(file);
+  } catch {
+    return end(res, 404, 'Not found');
+  }
+  if (path.extname(file) !== '.html') {
+    res.writeHead(200, { 'content-type': MIME[path.extname(file)] ?? 'application/octet-stream', 'cache-control': 'no-store' });
+    return res.end(body);
+  }
+  res.writeHead(200, { 'content-type': MIME['.html'], 'cache-control': 'no-store' });
+  res.end(injectIntoHtml(body.toString('utf8'), EDGE_SNIPPET));
 }
 
 async function serveStatic(pathname, res) {

@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en" data-default-protection="3" data-loaded-via="ES module import (startAntiSmith)">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Contact · Northwind CRM</title>
+    <link rel="stylesheet" href="/apps/crm/crm.css" />
+    <script src="/apps/crm/level.js"></script>
+  </head>
+  <body>
+    <header class="crm-header">
+      <a class="brand" href="/apps/crm/">Northwind CRM</a>
+      <nav aria-label="Main">
+        <a href="/apps/crm/">Dashboard</a>
+        <a href="/apps/crm/contacts.html" aria-current="page">Contacts</a>
+        <a href="/apps/crm/deals.html">Deals</a>
+        <a href="/crm-edge/tickets.html">Tickets</a>
+      </nav>
+      <div class="levels" aria-label="Protection level (testing)">
+        Protection:
+        <a href="?level=default" data-level="default">page default</a>
+        <a href="?level=0" data-level="0">0 off</a>
+        <a href="?level=1" data-level="1">1 banner</a>
+        <a href="?level=2" data-level="2">2 lockout</a>
+        <a href="?level=3" data-level="3">3 notice</a>
+      </div>
+    </header>
+    <main data-as-protected>
+      <p class="how">This page is a small JavaScript app: it renders the contact, then imports and calls startAntiSmith() itself (the bundled-app method). Default protection level: 3 (banner + lockout + agent notice).</p>
+      <div id="contact">Loading…</div>
+    </main>
+    <footer id="crm-debug">anti-smith not loaded yet</footer>
+    <script type="module">
+      // Integration method: the app imports anti-smith as a module and starts it after its first render.
+      import { contactById } from '/apps/crm/data.js';
+      import { bootAntiSmith, showDebug } from '/apps/crm/boot.js';
+
+      const contact = contactById(new URLSearchParams(location.search).get('id') ?? 1);
+      const root = document.getElementById('contact');
+      if (!contact) {
+        root.textContent = 'No such contact.';
+      } else {
+        document.title = contact.name + ' · Northwind CRM';
+        const fields = [
+          ['Company', contact.company], ['Email', contact.email], ['Phone', contact.phone],
+          ['Date of birth', contact.dob], ['National ID', contact.nationalId], ['Address', contact.address],
+          ['Status', contact.status], ['Owner', contact.owner], ['Notes', contact.notes],
+        ];
+        const h1 = document.createElement('h1');
+        h1.textContent = contact.name;
+        const dl = document.createElement('dl');
+        dl.className = 'fields';
+        dl.setAttribute('data-as-sensitive', '');
+        for (const [label, value] of fields) {
+          const dt = document.createElement('dt');
+          dt.textContent = label;
+          const dd = document.createElement('dd');
+          dd.textContent = value;
+          dl.append(dt, dd);
+        }
+        root.replaceChildren(h1, dl);
+      }
+      // Started after the render, so everything above counts as the page's own DOM.
+      showDebug(await bootAntiSmith());
+    </script>
+  </body>
+</html>

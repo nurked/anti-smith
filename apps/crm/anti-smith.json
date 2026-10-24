@@ -1,0 +1,38 @@
+{
+  "plugins": [
+    "/plugins/scorers/evidence-classes/index.js",
+    "/plugins/detectors/webdriver/index.js",
+    "/plugins/detectors/automation-globals/index.js",
+    "/plugins/detectors/headless/index.js",
+    "/plugins/detectors/permissions-consistency/index.js",
+    "/plugins/detectors/native-patches/index.js",
+    "/plugins/detectors/cdp-console/index.js",
+    "/plugins/detectors/dom-mutations/index.js",
+    "/plugins/detectors/input-trust/index.js",
+    "/plugins/detectors/mouse-dynamics/index.js",
+    "/plugins/detectors/keyboard-dynamics/index.js",
+    "/plugins/detectors/focus-scroll/index.js",
+    "/plugins/detectors/interaction-timing/index.js",
+    "/plugins/detectors/scroll-then-click/index.js",
+    "/plugins/detectors/sensitive-reads/index.js",
+    "/plugins/detectors/capture-hints/index.js",
+    "/plugins/detectors/extension-probe/index.js",
+    "/plugins/detectors/honeypots/index.js",
+    "/plugins/sinks/http-log/index.js",
+    "/plugins/responders/notify-server/index.js",
+    "/plugins/responders/step-up/index.js",
+    "/plugins/responders/agent-banner/index.js",
+    "/plugins/responders/lockout/index.js",
+    "/plugins/responders/agent-notice/index.js"
+  ],
+  "lists": "/api/lists",
+  "config": {
+    "plugins": {
+      "sink.http-log": { "endpoint": "/log" },
+      "responder.step-up": { "enabled": true, "allowRegistration": true },
+      "responder.agent-banner": { "enabled": true, "threshold": 40 },
+      "responder.lockout": { "enabled": true, "threshold": 40 },
+      "responder.agent-notice": { "enabled": true, "threshold": 40 }
+    }
+  }
+}

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en" data-default-protection="2" data-loaded-via="single-page app + adoptPending integration">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Deals · Northwind CRM</title>
+    <link rel="stylesheet" href="/apps/crm/crm.css" />
+    <script src="/apps/crm/level.js"></script>
+  </head>
+  <body>
+    <header class="crm-header">
+      <a class="brand" href="/apps/crm/">Northwind CRM</a>
+      <nav aria-label="Main">
+        <a href="/apps/crm/">Dashboard</a>
+        <a href="/apps/crm/contacts.html">Contacts</a>
+        <a href="/apps/crm/deals.html" aria-current="page">Deals</a>
+        <a href="/crm-edge/tickets.html">Tickets</a>
+      </nav>
+      <div class="levels" aria-label="Protection level (testing)">
+        Protection:
+        <a href="?level=default" data-level="default">page default</a>
+        <a href="?level=0" data-level="0">0 off</a>
+        <a href="?level=1" data-level="1">1 banner</a>
+        <a href="?level=2" data-level="2">2 lockout</a>
+        <a href="?level=3" data-level="3">3 notice</a>
+      </div>
+    </header>
+    <main data-as-protected>
+      <p class="how">This page is a client-rendered single-page app. It starts anti-smith first and re-renders on every filter click, wrapping each render in rendering(handle, …) so the DOM detector adopts its own nodes. Default protection level: 2 (banner + content lockout).</p>
+      <h1>Deals</h1>
+      <div class="filters" id="filters"></div>
+      <div class="board" id="board"></div>
+    </main>
+    <footer id="crm-debug">anti-smith not loaded yet</footer>
+    <script type="module">
+      // Integration method: SPA. anti-smith starts before the app renders; every render is adopted.
+      import { deals, stages, contactById } from '/apps/crm/data.js';
+      import { rendering } from '/packages/embed/src/integrations.js';
+      import { bootAntiSmith, showDebug } from '/apps/crm/boot.js';
+
+      const antiSmith = await bootAntiSmith();
+      showDebug(antiSmith);
+      const money = (n) => '$' + n.toLocaleString('en-US');
+      let filter = 'All';
+
+      function render() {
+        rendering(antiSmith, () => {
+          const filters = document.getElementById('filters');
+          filters.replaceChildren(
+            ...['All', ...stages].map((name) => {
+              const b = document.createElement('button');
+              b.type = 'button';
+              b.textContent = name;
+              if (name !== filter) b.className = 'secondary';
+              b.addEventListener('click', () => {
+                filter = name;
+                render();
+              });
+              return b;
+            }),
+          );
+          const board = document.getElementById('board');
+          board.replaceChildren(
+            ...stages
+              .filter((stage) => filter === 'All' || stage === filter)
+              .map((stage) => {
+                const column = document.createElement('section');
+                column.className = 'column';
+                const h3 = document.createElement('h3');
+                h3.textContent = stage;
+                column.append(h3);
+                for (const deal of deals.filter((d) => d.stage === stage)) {
+                  const card = document.createElement('div');
+                  card.className = 'deal';
+                  const contact = contactById(deal.contactId);
+                  card.innerHTML = '<strong></strong><div></div><div></div>';
+                  card.children[0].textContent = deal.title;
+                  card.children[1].textContent = contact.name + ' · ' + contact.company;
+                  card.children[2].textContent = money(deal.value);
+                  column.append(card);
+                }
+                return column;
+              }),
+          );
+        });
+      }
+      render();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en" data-default-protection="1" data-loaded-via="tag-manager snippet">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard · Northwind CRM</title>
+    <link rel="stylesheet" href="/apps/crm/crm.css" />
+    <script src="/apps/crm/level.js"></script>
+    <!-- Integration method: "tag manager" style. An inline snippet adds anti-smith at runtime,
+         the way analytics tags are usually added. Shared config: /apps/crm/anti-smith.json -->
+    <script>
+      (function (d) {
+        var config = d.createElement('script');
+        config.type = 'application/json';
+        config.id = 'anti-smith-config';
+        config.setAttribute('data-src', '/apps/crm/anti-smith.json');
+        d.head.appendChild(config);
+        var loader = d.createElement('script');
+        loader.type = 'module';
+        loader.src = '/packages/embed/src/auto.js';
+        d.head.appendChild(loader);
+      })(document);
+    </script>
+  </head>
+  <body>
+    <header class="crm-header">
+      <a class="brand" href="/apps/crm/">Northwind CRM</a>
+      <nav aria-label="Main">
+        <a href="/apps/crm/" aria-current="page">Dashboard</a>
+        <a href="/apps/crm/contacts.html">Contacts</a>
+        <a href="/apps/crm/deals.html">Deals</a>
+        <a href="/crm-edge/tickets.html">Tickets</a>
+      </nav>
+      <div class="levels" aria-label="Protection level (testing)">
+        Protection:
+        <a href="?level=default" data-level="default">page default</a>
+        <a href="?level=0" data-level="0">0 off</a>
+        <a href="?level=1" data-level="1">1 banner</a>
+        <a href="?level=2" data-level="2">2 lockout</a>
+        <a href="?level=3" data-level="3">3 notice</a>
+      </div>
+    </header>
+    <main data-as-protected>
+      <p class="how">This page loads anti-smith through a tag-manager style snippet (an inline script that adds the bootstrap at runtime). Default protection level: 1 (banner).</p>
+      <h1>Dashboard</h1>
+      <div class="cards">
+        <div class="card"><div>Contacts</div><div class="big">12</div></div>
+        <div class="card"><div>Customers</div><div class="big">7</div></div>
+        <div class="card"><div>Open pipeline</div><div class="big">$231,000</div></div>
+        <div class="card"><div>Open tickets</div><div class="big">4</div></div>
+      </div>
+      <h2>Recent activity</h2>
+      <ul>
+        <li>Dana logged a call with <a href="/apps/crm/contact.html?id=1">Avery Example</a> about the fleet tracking renewal.</li>
+        <li>Lee moved <a href="/apps/crm/deals.html">Claims workflow</a> (Notreal Insurance, $72,000) to Proposal.</li>
+        <li>Sam added a note to <a href="/apps/crm/contact.html?id=4">Morgan Testcase</a>: medical leave until June.</li>
+        <li>Jamie Fixture requested a data export for an audit (<a href="/crm-edge/tickets.html">ticket #2207</a>).</li>
+      </ul>
+    </main>
+    <footer id="crm-debug">anti-smith not loaded yet</footer>
+    <script type="module">
+      import { showDebug } from '/apps/crm/boot.js';
+      document.addEventListener('anti-smith:ready', (event) => showDebug(event.detail), { once: true });
+    </script>
+  </body>
+</html>

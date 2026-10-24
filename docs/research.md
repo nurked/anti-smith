@@ -176,6 +176,23 @@ Still missing: human baselines. Every rule above has only been measured against 
 - **Headed Patchright is the hardest client-side case measured so far:** only behaviour gives it away, and at 23 it stays under the 40 threshold, so `responder.redact` (on-score mode) would not engage. Pages with the most sensitive data should use redaction `mode: 'always'` plus step-up, and rely on server-side controls, rather than on the score.
 - Raising behavioural weights would catch it, but cannot be justified until human and assistive-technology baselines exist (test plan #1, #8). This is now the most important open measurement.
 
+### Sixth observation: protection levels on the Northwind CRM (2026-10-24)
+
+`apps/crm` is a five-page fake CRM; each page loads anti-smith a different way (tag-manager snippet, script tag + shared JSON, ES-module import, single-page app with `adoptPending`, edge injection by the server). `tools/harness/crm-check.mjs` visits every page at every level with headless Playwright (flagged on load):
+
+| Level | Banner | Contact names / IDs readable | Notice only |
+| --- | :-: | --- | :-: |
+| 0 | – | all | – |
+| 1 | yes | all | – |
+| 2 | yes | **none** | – |
+| 3 | (hidden with everything else) | **none** | **yes**, title "Automated access is not permitted" |
+
+Identical on all five integration methods; the same tickets page served without the edge injection stays fully readable. No page flagged its own rendering. "I am a person — verify" (WebAuthn step-up, here a virtual authenticator) restored the content and title.
+
+Live agent (the Claude desktop in-app browser) doing a short task on the tickets page at level 3: score 25 → 33 (mouse-dynamics detected, keyboard speed, scroll-then-click, embedded-browser window size) — **below the default threshold of 40, so nothing engaged**. With `?threshold=25`, the notice replaced the page while the agent was typing; its next click failed because the button no longer existed, and page text, search and screenshot showed only the notice. Claude in Chrome was not connected for this run.
+
+Takeaways: the levels work mechanically on every integration method; whether they engage against a careful agent depends entirely on the threshold, which cannot be lowered responsibly without human and assistive-technology baselines.
+
 ## 5. Beyond the page: the layers that actually hold
 
 Client-side detection alone cannot protect the data, because the data is already in the agent's browser by the time the page decides anything. The durable controls are:

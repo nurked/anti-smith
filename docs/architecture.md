@@ -38,6 +38,7 @@ lists/         signal data (JSON, versioned by date)
 apps/
   lab/         research page and server (built on packages/server)
   embed-demo/  a page using packages/embed the way a real site would
+  crm/         Northwind CRM: fake multi-page app, five integration methods, protection levels 1–3
 tools/         check-plugins, check-lists, new-plugin, gen-catalog, lib/
 tools/harness/ automation runs (Playwright, Patchright, Puppeteer, Selenium) — own dependencies
 docs/          research, architecture, plugin API, test plan, roadmap, ADRs, catalog
@@ -49,7 +50,7 @@ var/           local logs (git-ignored)
 | Kind | Implements | Purpose |
 | --- | --- | --- |
 | `detector` | `start(ctx)` | Observes the environment and reports a finding `{ status, weight, evidence }`. Declares its evidence class. |
-| `responder` | `onScore(result, ctx)` | Acts on the score. Page-changing responders are opt-in (ADR 0005). |
+| `responder` | `onScore(result, ctx)` | Acts on the score. Page-changing responders are opt-in (ADR 0005); protection levels 1–3 are three of them (ADR 0006). |
 | `sink` | `onEvent(event, ctx)` | Ships events somewhere (HTTP, console, analytics). |
 | `scorer` | `score(findings, ctx)` | Turns findings into `{ score, level, contributors, … }`. The first enabled scorer decides; the built-in weighted scorer is the fallback. |
 
