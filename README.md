@@ -28,7 +28,7 @@ Checks every plugin against the contract and runs all tests (locally; no hosted 
 | --- | --- |
 | [`packages/core`](packages/core/src) | Runtime: plugin contract, scoring, event log, DOM ownership, safe API observation |
 | [`packages/testkit`](packages/testkit/src) | Run a plugin in Node with fake browser globals |
-| [`plugins/detectors`](plugins/detectors) | 17 detectors: webdriver, automation globals, headless signs, permission consistency, patched natives, CDP console probe, debugger timing, foreign DOM, untrusted events, mouse/keyboard dynamics, focus/scroll/hidden-tab input, interaction timing, sensitive reads, capture hints, extension probe, honeypots + canary |
+| [`plugins/detectors`](plugins/detectors) | 18 detectors: webdriver, automation globals, headless signs, permission consistency, patched natives, CDP console probe, debugger timing, foreign DOM, untrusted events, mouse/keyboard dynamics, focus/scroll/hidden-tab input, interaction timing, scroll-then-click, sensitive reads, capture hints, extension probe, honeypots + canary |
 | [`plugins/responders`](plugins/responders) | `on-detected` stub hook |
 | [`plugins/sinks`](plugins/sinks) | `http-log` (batches to `POST /log`, `sendBeacon` on hide) |
 | [`apps/lab`](apps/lab) | The lab page and its server |

@@ -90,8 +90,9 @@ export default {
       evaluate();
     });
 
-    ctx.on(win, 'blur', () => ctx.log('window-blur', { visibility: state() }));
-    ctx.on(win, 'focus', () => ctx.log('window-focus', { visibility: state() }));
+    // Capturing listeners on window also receive element focus/blur; keep only the window's own.
+    ctx.on(win, 'blur', (e) => e.target === win && ctx.log('window-blur', { visibility: state() }));
+    ctx.on(win, 'focus', (e) => e.target === win && ctx.log('window-focus', { visibility: state() }));
     ctx.report({ status: 'clean', evidence: { counts: s.counts } });
   },
 };

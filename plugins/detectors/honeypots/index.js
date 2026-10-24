@@ -24,6 +24,7 @@ export default {
     'Agents that act only on visible elements, screenshots or the accessibility tree never touch the traps.',
     'Some password managers fill hidden inputs; the trap input uses a non-credential name and autocomplete=off to reduce this.',
     'The canary only helps if something downstream (server logs, form handlers, support inbox) is searched for it.',
+    'In-viewport traps cover a 2×2 px spot at the top-left and bottom-left corners; a person clicking exactly there would trip them.',
   ],
   defaults: {
     trapPath: '/__as_trap/',
@@ -31,6 +32,9 @@ export default {
     buttonText: 'Download full database',
     inputName: 'as_trap_reference',
     pollMs: 2000,
+    inViewportTraps: true,
+    viewportButtonText: 'Approve all pending transfers',
+    viewportLinkText: 'Bulk export (admin)',
   },
 
   start(ctx) {
@@ -65,6 +69,22 @@ export default {
     ctx.own(container);
     doc.body.appendChild(container);
 
+    // In-viewport traps: some agents see off-screen traps but refuse to click outside the
+    // viewport. These sit inside it, 2×2 px, fully transparent, at the left edge.
+    if (config.inViewportTraps) {
+      const pinned = (where) => `position:fixed;left:0;${where}:0;width:2px;height:2px;margin:0;padding:0;border:0;opacity:0;overflow:hidden;z-index:2147483647;`;
+      const viewportTraps = [
+        make('button', { ...base, 'data-as-trap': 'viewport-button', type: 'button', style: pinned('top') }, config.viewportButtonText),
+        make('a', { ...base, 'data-as-trap': 'viewport-link', href: `${config.trapPath}viewport-link?t=${token}`, style: `${pinned('bottom')}display:block;` }, config.viewportLinkText),
+      ];
+      for (const trap of viewportTraps) {
+        ctx.own(trap);
+        doc.body.appendChild(trap);
+        traps.push(trap);
+      }
+      ctx.onCleanup(() => viewportTraps.forEach((trap) => trap.remove()));
+    }
+
     const s = ctx.state;
     s.hits = [];
     const hit = (trap, detail) => {
@@ -75,7 +95,11 @@ export default {
 
     for (const trap of traps) {
       const name = trap.getAttribute('data-as-trap');
-      for (const type of ['click', 'pointerdown', 'mousedown', 'mouseover', 'focus', 'keydown', 'input', 'change']) {
+      // A person's pointer can pass over a 2 px corner on its way somewhere; only count deliberate actions there.
+      const types = name.startsWith('viewport-')
+        ? ['click', 'pointerdown', 'focus', 'keydown']
+        : ['click', 'pointerdown', 'mousedown', 'mouseover', 'focus', 'keydown', 'input', 'change'];
+      for (const type of types) {
         ctx.on(trap, type, (e) => hit(name, { event: type, isTrusted: e.isTrusted }));
       }
     }

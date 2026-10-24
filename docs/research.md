@@ -90,6 +90,41 @@ The lab was driven by the Claude desktop app's built-in browser pane (an automat
 
 Score 33 (suspicious, below the 40 "likely agent" line). This matches the model in §3: when input and reading go through CDP, the static and hook-based checks are blind and behaviour carries the signal. The user agent also contained a `Claude/<version>` product token — a reminder that some embedded agents do identify themselves and the server should log the UA.
 
+### Second observation (n = 1, 2026-10-24)
+
+Same in-app browser, full task script: type username, set password with the tool's "form fill" action, submit, two buttons, type notes, wheel-scroll, click a link, read the page, look for the traps, open the trap URL.
+
+| Fired | Did not fire |
+| --- | --- |
+| `input-trust` **detected**: the form-fill action set the password by script, producing untrusted `input` and `change` events | `webdriver`, `automation-globals`, `native-patches`, `headless` (outer size was normal this time) |
+| `mouse-dynamics` **detected**: 6/6 clicks on the exact centre, 4 with zero moves | `sensitive-reads`: page text and the table were read without touching main-world getters |
+| `keyboard-dynamics` suspicious: typed text arrived as single `insertText` events, no keydown | `capture-hints`: no frame stalls this time (first run had 3) — not reproducible yet |
+| Server: opening the trap link logged `trap-hit` + `canary-hit` with `Sec-Fetch-Site: none` (direct navigation, not a click) | In-page honeypots: the tool *saw* the `aria-hidden` traps (its element search reads the DOM) but refused to click elements outside the viewport |
+
+Score 63, "likely agent" (crossed 40 at the first form fill). New observations to turn into detectors or fixes:
+
+- ~~**Window blur → focus around every action.**~~ Retracted: a logging bug. Capturing listeners on `window` also receive element focus/blur, so ordinary focus changes from clicks looked like window flicker. With the filter fixed, agent clicks produce no window blur/focus at all.
+- **Embedded panes break the DevTools heuristic.** Outer window 3008 px vs inner 1350 px made `cdp-console` assume DevTools was docked. Width-gap heuristics need an embedded-webview exception.
+- **Honeypot placement.** Off-screen traps are seen but not clickable by this agent. Traps inside the viewport but transparent (still `aria-hidden`, out of tab order) would test click-by-reference agents.
+
+### Third observation: Claude in Chrome (2026-10-24)
+
+The extension driving the lab in a normal, signed-in Google Chrome (Chrome 156, macOS). Two sessions.
+
+| Signal | Session A (password set with form fill) | Session B (everything typed) |
+| --- | --- | --- |
+| `input-trust` | **detected** — form fill fires untrusted `input`/`change` | clean — typing and clicks are trusted (CDP input) |
+| `mouse-dynamics` | **detected** — exact-centre clicks, 0–1 moves | **detected** |
+| `dom-mutations` | suspicious — an empty, attribute-less `<div>` appended to `<body>` ~0.9 s after load, 0×0, no open shadow root (likely a closed shadow-root host for the extension's UI — **hypothesis**) | suspicious — same `<div>` |
+| `scroll-then-click` (new) | — | suspicious — unexplained scroll, click 64 ms later |
+| `keyboard-dynamics` | clean at the time | 61 keys, **mean gap 6 ms** (people: 60–250 ms) → new superhuman-speed rule now marks it suspicious |
+| `headless` | suspicious — outer window 0×0 at load (tab opened in a new background window) | clean |
+| `honeypots` | not tried | **detected** after the new in-viewport trap: the agent found the `aria-hidden` 2×2 transparent button and clicked it (trusted events) |
+| Silent | `webdriver`, `automation-globals`, `native-patches`, `cdp-console`, `sensitive-reads`, `capture-hints` | same |
+| Score | 70, likely agent | 25 before the trap → 65 after |
+
+Takeaways: the extension leaves a DOM footprint on every page (the empty `<div>`), types at machine speed, clicks element centres after scrolling them into view, and will act on elements that are hidden from assistive technology when a task leads it there. Reading the page (the sensitive table) left no trace in the main world, as expected. The extension ID is still unknown — the sandbox blocked reading Chrome's profile folder — so `extension-probe` remains unconfigured.
+
 ## 5. Beyond the page: the layers that actually hold
 
 Client-side detection alone cannot protect the data, because the data is already in the agent's browser by the time the page decides anything. The durable controls are:

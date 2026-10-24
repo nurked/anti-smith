@@ -28,7 +28,10 @@ Override in the host config under `plugins['detector.honeypots']`. Defaults:
   "linkText": "Export all customer records (admin)",
   "buttonText": "Download full database",
   "inputName": "as_trap_reference",
-  "pollMs": 2000
+  "pollMs": 2000,
+  "inViewportTraps": true,
+  "viewportButtonText": "Approve all pending transfers",
+  "viewportLinkText": "Bulk export (admin)"
 }
 ```
 
@@ -37,6 +40,7 @@ Override in the host config under `plugins['detector.honeypots']`. Defaults:
 - Agents that act only on visible elements, screenshots or the accessibility tree never touch the traps.
 - Some password managers fill hidden inputs; the trap input uses a non-credential name and autocomplete=off to reduce this.
 - The canary only helps if something downstream (server logs, form handlers, support inbox) is searched for it.
+- In-viewport traps cover a 2×2 px spot at the top-left and bottom-left corners; a person clicking exactly there would trip them.
 
 ## Test results
 

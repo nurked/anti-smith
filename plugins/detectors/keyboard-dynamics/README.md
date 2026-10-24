@@ -23,6 +23,7 @@ Override in the host config under `plugins['detector.keyboard-dynamics']`. Defau
   "burstGapMs": 1500,
   "minKeys": 8,
   "regularCv": 0.1,
+  "superhumanMedianMs": 25,
   "keylessWindowMs": 60,
   "bulkChars": 4,
   "minKeyless": 2
@@ -33,7 +34,8 @@ Override in the host config under `plugins['detector.keyboard-dynamics']`. Defau
 
 - Dictation, IME composition and some accessibility keyboards insert text without keydown events.
 - Password managers and browser autofill are excluded by inputType, but not all of them set it.
-- Agents adding random delays between keystrokes will pass the rhythm check.
+- Agents adding random, human-speed delays between keystrokes will pass the rhythm and speed checks.
+- Text expanders and keyboard macros also type faster than people; superhuman speed alone is only suspicious.
 
 ## Test results
 

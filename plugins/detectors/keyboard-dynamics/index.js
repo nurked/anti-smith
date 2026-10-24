@@ -21,12 +21,15 @@ export default {
   limitations: [
     'Dictation, IME composition and some accessibility keyboards insert text without keydown events.',
     'Password managers and browser autofill are excluded by inputType, but not all of them set it.',
-    'Agents adding random delays between keystrokes will pass the rhythm check.',
+    'Agents adding random, human-speed delays between keystrokes will pass the rhythm and speed checks.',
+    'Text expanders and keyboard macros also type faster than people; superhuman speed alone is only suspicious.',
   ],
   defaults: {
     burstGapMs: 1500,
     minKeys: 8,
     regularCv: 0.1,
+    // Fast human typists average 60–100 ms between keys. Claude in Chrome measured 6 ms (2026-10-24).
+    superhumanMedianMs: 25,
     keylessWindowMs: 60,
     bulkChars: 4,
     minKeyless: 2,
@@ -45,10 +48,12 @@ export default {
       const recent = s.intervals.slice(-40);
       const stats = recent.length >= config.minKeys ? describe(recent) : null;
       const regular = Boolean(stats && stats.cv < config.regularCv);
+      const superhuman = Boolean(stats && stats.medianMs < config.superhumanMedianMs);
       const keyless = s.keyless >= config.minKeyless;
-      const evidence = { keys: s.intervals.length + (s.lastKeyAt === null ? 0 : 1), rhythm: stats, keylessInserts: s.keyless, bulkInserts: s.bulk };
-      if (regular && keyless) ctx.escalate({ status: 'detected', evidence });
-      else if (regular || keyless || s.bulk) ctx.escalate({ status: 'suspicious', evidence });
+      const evidence = { keys: s.intervals.length + (s.lastKeyAt === null ? 0 : 1), rhythm: stats, superhumanSpeed: superhuman, keylessInserts: s.keyless, bulkInserts: s.bulk };
+      const flags = [regular, superhuman, keyless].filter(Boolean).length;
+      if (flags >= 2) ctx.escalate({ status: 'detected', evidence });
+      else if (flags || s.bulk) ctx.escalate({ status: 'suspicious', evidence });
       else ctx.escalate({ status: 'clean', evidence });
     };
 
@@ -80,5 +85,7 @@ export default {
 function describe(values) {
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
   const sd = Math.sqrt(values.reduce((a, b) => a + (b - mean) ** 2, 0) / values.length);
-  return { n: values.length, meanMs: Math.round(mean), sdMs: Math.round(sd), cv: mean ? Math.round((sd / mean) * 1000) / 1000 : 0 };
+  const sorted = [...values].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+  return { n: values.length, meanMs: Math.round(mean), medianMs: Math.round(median), sdMs: Math.round(sd), cv: mean ? Math.round((sd / mean) * 1000) / 1000 : 0 };
 }

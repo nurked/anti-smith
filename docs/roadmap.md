@@ -3,7 +3,7 @@
 ## Phase 0 — Lab (now)
 
 - [x] Core runtime: plugin contract, scoring, event log, DOM ownership, safe API observation
-- [x] 17 detectors from the handoff spec, `on-detected` stub responder, HTTP log sink
+- [x] 18 detectors (17 from the handoff spec, plus scroll-then-click from the Claude in Chrome run), `on-detected` stub responder, HTTP log sink
 - [x] Lab page and local server with JSON-lines log, honeypot and canary endpoints
 - [x] Contract checker, scaffolder, generated catalog, unit tests
 - [ ] Fill in the Claude for Chrome extension ID and a web-accessible path in `apps/lab/lab.config.js`
