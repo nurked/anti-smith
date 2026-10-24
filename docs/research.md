@@ -134,6 +134,35 @@ Takeaways: the extension leaves a DOM footprint on every page (the empty `<div>`
 
 Caveat: installed is not active. This tells a site that the person *could* hand the page to an agent, not that one is acting now — combine it with the behavioural signals before responding.
 
+### Fourth observation: automation frameworks (2026-10-24)
+
+`tools/harness` runs the same task (type, fill, click, scrape the table from the main world) through each tool. Chrome 156 and Firefox are the ones installed on the machine; Playwright uses its own Chromium/WebKit builds. D detected · s suspicious · · clean · – unsupported.
+
+| Detector | PW Chromium headless | PW Chromium headed | PW WebKit | Puppeteer Chrome | Puppeteer + stealth | Puppeteer Firefox (BiDi) | Selenium Chrome | Selenium Firefox |
+| --- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
+| webdriver | D | D | D | D | · | D | D | D |
+| automation-globals | · | · | · | · | · | · | D (`cdc_`) | · |
+| headless | D | · | · | D | D (spoofed values) | · | D | · |
+| permissions-consistency | D | · | · | · | D | · | · | · |
+| cdp-console | · | · | D | · | · | · | · | · |
+| input-trust | · | · | · | · | · | · | D (JS value set) | D |
+| mouse-dynamics | D | D | D | D | D | D | D | D |
+| keyboard-dynamics | s | s | s | s | s | s | s | s |
+| scroll-then-click | · | · | s | s | s | s | s | s |
+| sensitive-reads | D (stack marker) | D | s | D (stack marker) | D | D | s | s |
+| **score** | **100** | **78** | **88** | **100** | **70** | **80** | **100** | **100** |
+
+Findings:
+
+- **Every framework is caught**, mostly by several independent detectors. `navigator.webdriver` alone catches everything except the stealth kit, including Firefox driven over WebDriver BiDi and Marionette.
+- **Behaviour is universal.** `mouse-dynamics` fired for all eight runs and `keyboard-dynamics` (superhuman typing speed) for all eight: no framework moves the mouse or types like a person by default.
+- **Main-world scraping is visible.** `page.evaluate` / `executeScript` reading the table tripped `sensitive-reads` in every run; Chromium-based Playwright and Puppeteer runs also left recognisable stack frames (detected), WebKit and Selenium did not (suspicious).
+- **puppeteer-extra-plugin-stealth** hid `webdriver`, the HeadlessChrome UA and every native-function patch (its Proxy wrappers stringify as native, and its init scripts also reach script-created iframes, so the "pristine iframe" comparison does not help). It was caught by values no real browser produces: a non-ANGLE WebGL renderer ("Intel Iris OpenGL Engine" on an Apple M3) and a client-hint platform of "Mac OS X" (browsers send "macOS"), plus inconsistent notification permissions. `headless` now treats such impossible values as detected.
+- **WebKit fires the console-serialisation probe** (`cdp-console`): its inspector protocol still invokes getters, unlike current Chromium.
+- **Not run:** Playwright's patched Firefox build fails to start on this macOS version ("Could not find profile folder", even outside any sandbox). Firefox is covered by Puppeteer (BiDi) and Selenium (geckodriver) using the installed Firefox.
+
+Still missing: human baselines. Every rule above has only been measured against machines.
+
 ## 5. Beyond the page: the layers that actually hold
 
 Client-side detection alone cannot protect the data, because the data is already in the agent's browser by the time the page decides anything. The durable controls are:

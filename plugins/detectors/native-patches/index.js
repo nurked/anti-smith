@@ -44,7 +44,7 @@ export default {
   tags: ['stealth', 'fingerprint'],
   limitations: [
     'Legitimate libraries patch some of these too (zone.js and error trackers wrap addEventListener; privacy extensions patch canvas). Those count as suspicious, not detected.',
-    'A careful stealth kit patches the iframe realm as well, or uses Proxy objects that stringify as native.',
+    'A careful stealth kit patches the iframe realm as well, or uses Proxy objects that stringify as native. puppeteer-extra-plugin-stealth passes this detector (2026-10-24); its spoofed values are caught by detector.headless and detector.permissions-consistency instead.',
     'Patches made by anti-smith itself are skipped via ctx.isOwnPatch().',
   ],
 

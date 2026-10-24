@@ -11,7 +11,8 @@
 
 ## Phase 1 — Measurement
 
-- [ ] `tools/harness` workspace: Playwright, Puppeteer, stealth runs as scripts
+- [x] `tools/harness`: Playwright, Puppeteer (+ stealth), Selenium runs as scripts, with a results matrix
+- [ ] Harness runs for patched Playwright forks and other anti-detect browsers
 - [ ] Run the full [test plan](test-plan.md), including assistive-tech sessions
 - [ ] Results matrix in research.md; per-detector results in each README
 - [ ] Re-fit weights from labelled runs; make the scorer a plugin

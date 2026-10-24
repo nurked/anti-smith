@@ -18,9 +18,9 @@ Task script (same for every run, so runs are comparable): sign in with any made-
 | --- | --- | --- | --- |
 | 1 | Human, plain Chrome | Baseline false positives | At least 10 sessions, different people if possible |
 | 2 | Human, DevTools open (docked and undocked) | False positives of `cdp-console`, `debugger-timing`, `capture-hints` | Expect debugger pauses; that is the measurement |
-| 3 | Playwright, defaults | Class B | See harness sketch below |
-| 4 | Playwright + stealth (or a patched fork) | Class C | Record which kit and version |
-| 5 | Puppeteer | Class B | |
+| 3 | Playwright, defaults | Class B | Done 2026-10-24 via `tools/harness` (Chromium headless/headed, WebKit; Firefox build fails on this macOS) |
+| 4 | Playwright + stealth (or a patched fork) | Class C | puppeteer-extra-plugin-stealth done 2026-10-24; patched Playwright forks still to do |
+| 5 | Puppeteer, Selenium | Class B | Done 2026-10-24 via `tools/harness`, Chrome and Firefox |
 | 6 | Claude for Chrome performing the task | Class D | First two sessions done 2026-10-24, see research.md §4. Extension probe configured. |
 | 7 | Other AI browsers / agents available | Classes D–F | Record product and version |
 | 8 | Assistive tech: macOS Voice Control, Windows Voice Access, a screen reader, switch access | False positives that matter most | Must be done before any responder adds friction |
@@ -28,30 +28,18 @@ Task script (same for every run, so runs are comparable): sign in with any made-
 
 Record each run's outcome in the README of every detector (`Test results` table) and summarise the matrix in research.md.
 
-## Harness sketches (not committed as dependencies yet)
+## Harness
 
-The repo has zero dependencies on purpose. To run 3–5, install the tools in a scratch folder outside the repo, or add a `tools/harness` workspace in a later PR.
+`tools/harness` drives the lab with Playwright, Puppeteer (plain and with puppeteer-extra stealth) and Selenium, using the same task for every tool, and prints a detector × run matrix. It has its own dependencies so the rest of the repo stays dependency-free.
 
-```js
-// playwright-run.mjs — npm i playwright && npx playwright install chromium
-import { chromium } from 'playwright';
-const browser = await chromium.launch({ headless: false });
-const page = await browser.newPage();
-await page.goto('http://127.0.0.1:8787/apps/lab/');
-await page.fill('input[name=username]', 'test-user');
-await page.fill('input[name=password]', 'not-a-real-password');
-await page.click('button[type=submit]');
-await page.click('text=Approve transfer');
-await page.click('text=Delete record');
-await page.type('#notes', 'First sentence. Second sentence.', { delay: 50 });
-const rows = await page.$$eval('#records tr', (trs) => trs.map((tr) => tr.innerText));
-console.log(rows.length);
-await page.fill('#run-label', 'playwright-default');
-await page.waitForTimeout(3000); // let the http-log sink flush
-await browser.close();
+```bash
+cd tools/harness
+npm install
+npm run setup          # downloads Playwright's Chromium, Firefox and WebKit
+npm run run            # every run; or: npm run run -- firefox
 ```
 
-Run it headed and headless (`headless: true`) as separate runs. The server log captures results even without pressing Export.
+The lab server must be running (`npm start` in the repo root). Exports and `matrix.md` land in `exports/<date>/`. Puppeteer and Selenium use the Chrome and Firefox installed in `/Applications`.
 
 ## What counts as a result
 

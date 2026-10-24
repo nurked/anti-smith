@@ -7,7 +7,7 @@ export default {
   kind: 'detector',
   version: '0.1.0',
   title: 'Headless browser signs',
-  description: 'HeadlessChrome in UA or client hints, empty plugins/languages, UA vs client-hint mismatch, software WebGL renderer, zero outer window size, missing window.chrome.',
+  description: 'HeadlessChrome in UA or client hints, values no real browser produces (non-ANGLE WebGL on desktop Chromium, invalid client-hint platform), empty plugins/languages, UA vs client-hint mismatch, software WebGL, zero outer window size, missing window.chrome.',
   weight: 'medium',
   phase: 'static',
   tags: ['headless', 'fingerprint'],
@@ -28,6 +28,8 @@ export default {
     const mobile = /Mobile|Android/.test(ua);
     const hard = [];
     const soft = [];
+    // Values a real browser cannot produce: someone overrode them (stealth kits, anti-detect browsers).
+    const spoofed = [];
 
     if (/HeadlessChrome/.test(ua)) hard.push('userAgent contains HeadlessChrome');
     const brands = nav.userAgentData?.brands ?? [];
@@ -40,7 +42,8 @@ export default {
     if (nav.userAgentData) {
       const hinted = nav.userAgentData.platform;
       const claimed = platformFromUA(ua);
-      if (hinted && claimed && hinted !== claimed) soft.push(`platform mismatch: UA says ${claimed}, client hints say ${hinted}`);
+      if (hinted && !CLIENT_HINT_PLATFORMS.includes(hinted)) spoofed.push(`client-hint platform "${hinted}" is not a value browsers send`);
+      else if (hinted && claimed && hinted !== claimed) soft.push(`platform mismatch: UA says ${claimed}, client hints say ${hinted}`);
       const uaMajor = ua.match(/Chrome\/(\d+)/)?.[1];
       const brandMajor = brands.find((b) => /Chrom/.test(b.brand))?.version;
       if (uaMajor && brandMajor && uaMajor !== brandMajor) soft.push(`version mismatch: UA ${uaMajor}, client hints ${brandMajor}`);
@@ -48,17 +51,23 @@ export default {
 
     const renderer = webglRenderer(doc);
     if (renderer && config.softRenderers.some((name) => renderer.includes(name))) soft.push(`software WebGL renderer: ${renderer}`);
+    // Desktop Chromium has reported "ANGLE (vendor, renderer…)" for years; anything else is a spoofed value
+    // (puppeteer-extra stealth reports "Intel Iris OpenGL Engine", seen on an Apple M3 on 2026-10-24).
+    else if (renderer && chromium && !mobile && !renderer.startsWith('ANGLE')) spoofed.push(`non-ANGLE WebGL renderer on desktop Chromium: ${renderer}`);
 
     if (win.outerWidth === 0 || win.outerHeight === 0) soft.push(`outer window size ${win.outerWidth}x${win.outerHeight}`);
     if (chromium && !win.chrome) soft.push('Chromium UA without window.chrome');
 
-    const evidence = { hard, soft, renderer, userAgent: ua };
+    const evidence = { hard, spoofed, soft, renderer, userAgent: ua };
     if (hard.length) return ctx.report({ status: 'detected', weight: 'strong', evidence });
-    if (soft.length >= 3) return ctx.report({ status: 'detected', evidence });
+    if (spoofed.length || soft.length >= 3) return ctx.report({ status: 'detected', evidence });
     if (soft.length) return ctx.report({ status: 'suspicious', evidence });
     return ctx.report({ status: 'clean', evidence });
   },
 };
+
+// The values navigator.userAgentData.platform can take (UA client hints spec).
+const CLIENT_HINT_PLATFORMS = ['Android', 'Chrome OS', 'Chromium OS', 'Fuchsia', 'iOS', 'Linux', 'macOS', 'Windows', 'Unknown'];
 
 function platformFromUA(ua) {
   if (/Windows/.test(ua)) return 'Windows';

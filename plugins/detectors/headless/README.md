@@ -1,6 +1,6 @@
 # Headless browser signs — `detector.headless`
 
-HeadlessChrome in UA or client hints, empty plugins/languages, UA vs client-hint mismatch, software WebGL renderer, zero outer window size, missing window.chrome.
+HeadlessChrome in UA or client hints, values no real browser produces (non-ANGLE WebGL on desktop Chromium, invalid client-hint platform), empty plugins/languages, UA vs client-hint mismatch, software WebGL, zero outer window size, missing window.chrome.
 
 **Weight:** medium · **Phase:** static
 
@@ -39,7 +39,7 @@ Fill in from the runs in [docs/test-plan.md](../../../docs/test-plan.md).
 | --- | --- | --- |
 | Human, plain Chrome | | |
 | Human, DevTools open | | |
-| Playwright default | | |
-| Playwright + stealth | | |
-| Puppeteer | | |
-| Claude for Chrome | | |
+| Playwright default | **detected** headless (HeadlessChrome UA); clean headed | exports/2026-10-24 |
+| Playwright + stealth | puppeteer-extra stealth: **detected** — non-ANGLE renderer, "Mac OS X" client-hint platform | exports/2026-10-24 |
+| Puppeteer | **detected** (HeadlessChrome UA) | exports/2026-10-24 |
+| Claude for Chrome | clean, or suspicious when the tab opens in a background window (outer size 0×0) | exports/2026-10-24 |

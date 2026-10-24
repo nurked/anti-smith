@@ -32,6 +32,7 @@ Checks every plugin against the contract and runs all tests (locally; no hosted 
 | [`plugins/responders`](plugins/responders) | `on-detected` stub hook |
 | [`plugins/sinks`](plugins/sinks) | `http-log` (batches to `POST /log`, `sendBeacon` on hide) |
 | [`apps/lab`](apps/lab) | The lab page and its server |
+| [`tools/harness`](tools/harness) | Drives the lab with Playwright, Puppeteer (+ stealth) and Selenium; prints a detection matrix (own dependencies) |
 | [`docs/`](docs) | Research, architecture, plugin API, test plan, roadmap, ADRs, generated catalog |
 
 ## Read next
