@@ -13,18 +13,21 @@ npm run new-plugin -- detector my-signal
 | Field | Required | Notes |
 | --- | --- | --- |
 | `id` | yes | `<kind>.<kebab-name>`, must match the folder: `plugins/detectors/my-signal` → `detector.my-signal` |
-| `kind` | yes | `detector` · `responder` · `sink` |
+| `kind` | yes | `detector` · `responder` · `sink` · `scorer` |
 | `version` | yes | semver |
 | `title`, `description` | yes | Shown in the lab and the generated catalog |
 | `weight` | detectors | `strong` · `medium` · `weak`. New detectors start at `weak`. |
+| `evidence` | detectors | `deterministic` (people essentially never produce it) · `environment` (browser set-up) · `behaviour` (how input arrives). See ADR 0005. |
 | `limitations` | detectors | At least one. What it misses and what it falsely flags. Shown in the lab. |
 | `start(ctx)` | detectors | May be async. May return a cleanup function. |
 | `onScore(result, ctx)` | responders | Called after every finding change. |
 | `onEvent(event, ctx)` | sinks | Called for every event, including those logged before `start`. |
+| `score(findings, ctx)` | scorers | Returns `{ score, level, contributors, … }`. Extra fields are passed through to responders. |
 | `phase` | no | `static` (checks once) or `runtime` (keeps watching). Informational. |
 | `noisy` | no | `true` when false positives are expected (DevTools users etc.). Shown in the UI and score. |
 | `tags` | no | Free-form strings. |
-| `defaults` | no | Config defaults; the host overrides them under `config.plugins[id]`. `enabled: false` disables the plugin. |
+| `defaults` | no | Config defaults; the host overrides them under `config.plugins[id]`. `enabled: false` disables the plugin (page-changing responders ship with `enabled: false`). |
+| `lists` | no | Config keys filled from signal lists, e.g. `{ names: 'automation-globals.names' }`. Precedence: defaults < lists < host config. See lists/README.md. |
 
 No top-level side effects: importing the module in Node must not touch `window` or `document` (`npm run check` imports every plugin to enforce this).
 
@@ -33,7 +36,7 @@ No top-level side effects: importing the module in Node must not touch `window` 
 | Member | Purpose |
 | --- | --- |
 | `id`, `sessionId` | Plugin id; random id of this runtime session |
-| `config` | Frozen merge of `defaults` and host config |
+| `config` | Frozen merge of `defaults`, list values and host config |
 | `state` | Mutable object for this plugin in this runtime. Keep state here, never in module scope. |
 | `window`, `document` | The environment (fakes in tests) |
 | `natives` | Built-ins captured at runtime creation: `now`, timers, `requestAnimationFrame`, `defineProperty`, `consoleDebug`, `querySelectorAll`, `getSelection`, `fnToString` |
@@ -47,6 +50,7 @@ No top-level side effects: importing the module in Node must not touch `window` 
 | `on(target, type, handler, options?)` | `addEventListener` with auto-cleanup and error isolation. Default `{ capture: true, passive: true }` |
 | `every(ms, fn)`, `after(ms, fn)` | Timers with auto-cleanup |
 | `onCleanup(fn)` | Run on stop |
+| `provide(name, fn)`, `service(name)` | Share a function with other plugins without imports; `service()` returns `null` when nobody provides it |
 | `observeCall(target, key, fn)` | Watch calls to a method. The original runs and its result is returned untouched; `fn({ thisArg, args, result })` runs after. Restored on stop. |
 | `observeGetter(target, key, fn)` | Same for accessors; works on instances (one element) or prototypes |
 | `isNative(fn)`, `isOwnPatch(fn)` | Native-looking source check; whether a function is one of anti-smith's own observers |
@@ -58,7 +62,7 @@ No top-level side effects: importing the module in Node must not touch `window` 
 **Finding**
 
 ```js
-{ id, title, status, weight, noisy, evidence, reports, updatedAt }
+{ id, title, status, weight, evidenceClass, noisy, evidence, reports, updatedAt }
 // status: pending | unsupported | error | clean | suspicious | detected
 ```
 
@@ -72,6 +76,7 @@ No top-level side effects: importing the module in Node must not touch `window` 
 
 ```js
 { score /* 0–100 */, level /* clean | suspicious | likely-agent */, contributors: [{ id, title, status, weight, noisy, points }] }
+// scorer.evidence-classes adds: classes { deterministic, environment, behaviour }, deterministic (bool), behaviourOnly (bool)
 ```
 
 **Export** (`runtime.exportJSON(meta)`, the lab's Export button)

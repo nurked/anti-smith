@@ -19,7 +19,7 @@ Task script (same for every run, so runs are comparable): sign in with any made-
 | 1 | Human, plain Chrome | Baseline false positives | At least 10 sessions, different people if possible |
 | 2 | Human, DevTools open (docked and undocked) | False positives of `cdp-console`, `debugger-timing`, `capture-hints` | Expect debugger pauses; that is the measurement |
 | 3 | Playwright, defaults | Class B | Done 2026-10-24 via `tools/harness` (Chromium headless/headed, WebKit; Firefox build fails on this macOS) |
-| 4 | Playwright + stealth (or a patched fork) | Class C | puppeteer-extra-plugin-stealth done 2026-10-24; patched Playwright forks still to do |
+| 4 | Playwright + stealth (or a patched fork) | Class C | puppeteer-extra stealth, Patchright and rebrowser-puppeteer done 2026-10-24 |
 | 5 | Puppeteer, Selenium | Class B | Done 2026-10-24 via `tools/harness`, Chrome and Firefox |
 | 6 | Claude for Chrome performing the task | Class D | First two sessions done 2026-10-24, see research.md §4. Extension probe configured. |
 | 7 | Other AI browsers / agents available | Classes D–F | Record product and version |
@@ -30,7 +30,7 @@ Record each run's outcome in the README of every detector (`Test results` table)
 
 ## Harness
 
-`tools/harness` drives the lab with Playwright, Puppeteer (plain and with puppeteer-extra stealth) and Selenium, using the same task for every tool, and prints a detector × run matrix. It has its own dependencies so the rest of the repo stays dependency-free.
+`tools/harness` drives the lab with Playwright, Patchright, Puppeteer (plain, puppeteer-extra stealth, rebrowser-puppeteer) and Selenium, using the same task for every tool, and prints a detector × run matrix. It has its own dependencies so the rest of the repo stays dependency-free.
 
 ```bash
 cd tools/harness
@@ -39,7 +39,9 @@ npm run setup          # downloads Playwright's Chromium, Firefox and WebKit
 npm run run            # every run; or: npm run run -- firefox
 ```
 
-The lab server must be running (`npm start` in the repo root). Exports and `matrix.md` land in `exports/<date>/`. Puppeteer and Selenium use the Chrome and Firefox installed in `/Applications`.
+The lab server must be running (`npm start` in the repo root). Exports and `matrix.md` land in `exports/<date>/`. Puppeteer, Patchright and Selenium use the Chrome and Firefox installed in `/Applications`.
+
+`node step-up-check.mjs` (lab on http://localhost:8787, freshly started) checks redaction + WebAuthn step-up against an agent that injects a virtual authenticator.
 
 ## What counts as a result
 

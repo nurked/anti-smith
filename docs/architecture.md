@@ -1,35 +1,45 @@
 # Architecture
 
-anti-smith is a small engine plus many independent plugins. The engine knows nothing about specific agents; every way of spotting or handling an agent is a plugin, so new techniques land as new folders, not as edits to shared code.
+anti-smith is a small engine plus many independent plugins, fed by versioned signal lists, with a server package for what the page cannot see. The engine knows nothing about specific agents: every way of spotting or handling one is a plugin, every piece of signal data is a list entry.
 
 ```
-             ┌──────────────────────────── page ───────────────────-──────────┐
-             │                                                                │
- plugins/    │   ┌──────────┐ report/escalate ┌──────────────┐  score         │
- detectors/* ├──▶│ detector │────────────────▶│              │──────────────┐ │
-             │   └──────────┘                 │   runtime    │              ▼ │
-             │   ┌──────────┐     ctx.log     │  (core)      │      ┌───────────┐
-             │   │ detector │────────────────▶│  findings    │      │ responder │ onScore()
-             │   └──────────┘                 │  scoring     │      └───────────┘
-             │        ▲ ctx.on / observe…     │  event log ──┼──▶ ┌──────┐.   │
-             │        │                       │  ownership   │    │ sink │ onEvent() ──▶ POST /log
-             │      DOM, events, APIs         └──────────────┘    └──────┘.   │
-             └────────────────────────────────────────────────────────────────┘
+ lists/*.json ──────────────┐ (config values)
+                            ▼
+             ┌─────────────────────────────── page ────────────────────────────────┐
+ plugins/    │  ┌──────────┐ report/escalate ┌─────────────┐ score ┌───────────┐   │
+ detectors/* ├─▶│ detector │────────────────▶│   runtime   │──────▶│ responder │   │ notify-server, redact,
+             │  └──────────┘                 │   (core)    │       └───────────┘   │ step-up (opt-in)
+             │       ▲ ctx.on / observe…     │  findings   │◀── scorer plugin      │
+             │     DOM, events, APIs         │  services   │──▶ ┌──────┐           │
+             │                               │  event log  │    │ sink │──────┐    │
+             │                               └─────────────┘    └──────┘      │    │
+             └────────────────────────────────────────────────────────────────┼────┘
+                                                                              ▼
+             ┌──────────────────────────── server (@anti-smith/server) ─────────────────┐
+             │ /log  /api/flag  /api/step-up/*  /__as_trap/*   + inspect(every request) │
+             │ Web Bot Auth · request signals · agent UA list · canary scan · sessions  │
+             └──────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Repository layout
 
 ```
 packages/
-  core/        runtime, plugin contract, scoring, event log, DOM ownership (no dependencies)
+  core/        runtime, plugin contract, scoring fallback, event log, DOM ownership, services (no dependencies)
+  server/      Web Bot Auth, request signals, canary scanning, sessions, WebAuthn step-up, HTTP handler (Node built-ins)
+  embed/       startAntiSmith(), script-tag bootstrap, framework integrations
   testkit/     run a plugin in Node with fake browser globals
 plugins/
   detectors/<name>/   index.js · index.test.js · README.md
   responders/<name>/
   sinks/<name>/
+  scorers/<name>/
+lists/         signal data (JSON, versioned by date)
 apps/
-  lab/         research page (index.html, lab.js, lab.config.js) and server.mjs
-tools/         check-plugins, new-plugin, gen-catalog, lib/discover-plugins
+  lab/         research page and server (built on packages/server)
+  embed-demo/  a page using packages/embed the way a real site would
+tools/         check-plugins, check-lists, new-plugin, gen-catalog, lib/
+tools/harness/ automation runs (Playwright, Patchright, Puppeteer, Selenium) — own dependencies
 docs/          research, architecture, plugin API, test plan, roadmap, ADRs, catalog
 var/           local logs (git-ignored)
 ```
@@ -38,46 +48,61 @@ var/           local logs (git-ignored)
 
 | Kind | Implements | Purpose |
 | --- | --- | --- |
-| `detector` | `start(ctx)` | Observes the environment and reports a finding: `{ status, weight, evidence }`. |
-| `responder` | `onScore(result, ctx)` | Decides what to do with the score. v0 has only the `on-detected` stub; nothing blocks. |
+| `detector` | `start(ctx)` | Observes the environment and reports a finding `{ status, weight, evidence }`. Declares its evidence class. |
+| `responder` | `onScore(result, ctx)` | Acts on the score. Page-changing responders are opt-in (ADR 0005). |
 | `sink` | `onEvent(event, ctx)` | Ships events somewhere (HTTP, console, analytics). |
+| `scorer` | `score(findings, ctx)` | Turns findings into `{ score, level, contributors, … }`. The first enabled scorer decides; the built-in weighted scorer is the fallback. |
 
-Planned kinds (not implemented yet, see [roadmap.md](roadmap.md)): `list` (signal data such as automation globals and extension IDs, versioned separately from code) and `server-check` (server-side signals such as Web Bot Auth verification).
+**Evidence classes** (ADR 0005): `deterministic` (people essentially never produce it), `environment` (how the browser is set up), `behaviour` (how input arrives). `scorer.evidence-classes` reports which classes contributed; only deterministic evidence may ever justify denial.
 
 ## Lifecycle
 
-1. The host page (the lab, later the embed script) imports plugins and calls `createRuntime({ plugins, config })`. Plugins are validated on registration; an invalid plugin fails loudly.
+1. The host imports plugins and calls `createRuntime({ plugins, config, lists })` — or `startAntiSmith()` from `packages/embed`. Plugins are validated on registration.
 2. `runtime.start()`:
    - snapshots the DOM so existing nodes count as the page's own;
-   - creates a context per enabled plugin;
+   - creates a context per enabled plugin, with config = plugin defaults < list values < host config;
    - subscribes sinks to the event log first, so they see everything;
    - marks every detector `pending`;
-   - calls `start(ctx)` for sinks, then responders, then detectors. Synchronous parts run in that order; async detectors settle in parallel.
-3. Detectors report with `ctx.report()` (set) or `ctx.escalate()` (never lowers the status). Every change re-scores and calls each responder's `onScore`.
-4. `runtime.stop()` runs cleanups in reverse (detectors, responders, sinks), restoring any observed APIs and letting sinks flush.
+   - calls `start(ctx)` for scorers, sinks, responders, then detectors. Synchronous parts run in that order; async detectors settle in parallel.
+3. Detectors report with `ctx.report()` (set) or `ctx.escalate()` (never lowers). Every change re-scores and calls each responder's `onScore`.
+4. `runtime.stop()` runs cleanups in reverse, restoring observed APIs, removing provided services and letting sinks flush.
 
-A plugin that throws is isolated: its finding becomes `error`, a `plugin.error` event is logged, and every other plugin keeps running. Observed API wrappers (`ctx.observeCall`, `ctx.observeGetter`) always return the original result, so a detector bug cannot change page behaviour.
+A plugin that throws is isolated: its finding becomes `error`, a `plugin.error` event is logged, everything else keeps running. Observed API wrappers always return the original result.
+
+## Cooperation without imports
+
+- **Services.** `ctx.provide(name, fn)` / `ctx.service(name)`. `responder.step-up` provides `step-up`; `responder.redact` uses it if present. `detector.dom-mutations` provides `adopt-mutations`, which backs `runtime.adoptPending()`.
+- **Event log.** `ctx.subscribe(fn)` for plugins that combine other plugins' observations.
+- **Lists.** Shared data, not shared code (lists/README.md).
+
+## DOM ownership on real pages
+
+The runtime claims every node present at start. After that, pages either call `runtime.adoptPending()` synchronously after rendering (it drains the mutation observer's pending records and claims those nodes before they are judged), claim nodes explicitly with `runtime.claim(node)`, or mark containers `data-as-ignore`. `packages/embed/src/integrations.js` wraps this for React (layout effect), Vue (mounted/updated — timing unverified) and swap libraries (htmx, Turbo, Unpoly). Anything injected in the same task as a page render is adopted with it; that window is small but real.
+
+## Server side
+
+`createAntiSmithHandler()` (packages/server) mounts on any Node HTTP server:
+
+- `inspect(req)` for every request: request signals (header order, client hints, Fetch Metadata, TLS, edge fingerprint headers), classification against `lists/agent-user-agents.json`, Web Bot Auth verification (RFC 9421, Ed25519, key directory fetch), canary scanning linked back to the session that planted the token.
+- Routes: `POST /log` (sink.http-log), `POST /api/flag` (responder.notify-server), `POST /api/step-up/*` (WebAuthn, verified server-side), `/__as_trap/*` (honeypots).
+- A bounded in-memory session store joins client findings and server observations; production replaces it with a shared store of the same shape.
 
 ## Key design decisions
 
-- **Plugins never import.** Everything arrives through `ctx`. Plugins can be loaded in any order, tested with fakes, bundled trivially and reviewed in isolation. ([ADR 0001](adr/0001-plugin-contract.md))
-- **Native ES modules, no build step, no runtime dependencies.** The lab runs from source; `node --test` is the test runner. ([ADR 0002](adr/0002-no-build-step.md))
-- **Detect only until measured.** Weights and responses change only with evidence from test runs. ([ADR 0003](adr/0003-detect-only.md))
+- **Plugins never import.** Everything arrives through `ctx`. ([ADR 0001](adr/0001-plugin-contract.md))
+- **Native ES modules, no build step, no runtime dependencies** in core, plugins and server. Harness tools live in their own package. ([ADR 0002](adr/0002-no-build-step.md))
+- **Detect first; responders opt-in; behaviour adds friction only.** ([ADR 0003](adr/0003-detect-only.md), [ADR 0005](adr/0005-responders-opt-in.md))
 - **Privacy by construction.** No key values, typed text or field values in events. ([ADR 0004](adr/0004-privacy-of-evidence.md))
-- **Discovery by folder.** The server lists `plugins/<kind>s/<name>/index.js`; the id is derived from the path. Adding a plugin never touches a shared registry file, so contributors do not collide.
-
-## DOM ownership
-
-DOM-diff detectors need to know which changes the page made. The runtime claims every node present at start, plugins claim nodes they insert (`ctx.own(node)` before insertion), host pages claim nodes they create later (`runtime.claim(node)`), and any subtree under `[data-as-ignore]` is skipped. Real sites with client-side rendering will need an integration (a framework hook that claims rendered roots); this is an open item.
+- **Discovery by folder; data in lists.** Adding a plugin or a list entry never touches a shared registry file.
 
 ## Scoring
 
-Default scorer: `strong` 40 points, `medium` 15, `weak` 5; `suspicious` counts half; capped at 100. Levels: `clean` < 15 ≤ `suspicious` < 40 ≤ `likely-agent`. The scorer is replaceable (`createRuntime({ scorer })`) — expect it to become a plugin once we have enough labelled runs to fit weights.
+Built-in fallback and `scorer.evidence-classes` share the formula: `strong` 40, `medium` 15, `weak` 5; `suspicious` counts half; capped at 100. Levels: `clean` < 15 ≤ `suspicious` < 40 ≤ `likely-agent`. Weights are starting points until human and assistive-technology baselines exist (research.md §4, fifth observation).
 
 ## Scaling to many contributors
 
-- **Ownership by folder.** Each plugin folder has owners in `CODEOWNERS`; core changes need core maintainers.
-- **Maturity.** New detectors start at `weight: 'weak'`. Raising a weight requires results from the test-plan runs in the plugin README (including false-positive runs).
-- **Contract stability.** The `ctx` API and plugin shape are versioned with `@anti-smith/core`. Additive changes only within a major version; removals need an ADR.
-- **Generated docs.** `docs/plugin-catalog.md` is generated from plugin metadata (`node tools/gen-catalog.mjs`), so it cannot drift.
-- **Local checks.** `npm run verify` runs the plugin contract check and all tests. No hosted CI is configured; run it before every pull request.
+- **Ownership by folder** (`CODEOWNERS`): plugins by their authors, lists by list maintainers, core/server/embed by core maintainers.
+- **Maturity.** New detectors start at `weight: 'weak'`; raising a weight needs recorded test-plan runs, including false-positive runs.
+- **Contract stability.** `ctx`, plugin shape and list format are versioned with `@anti-smith/core`; additive changes only within a major version; removals need an ADR.
+- **Generated docs.** `docs/plugin-catalog.md` is generated from plugin metadata.
+- **Local checks.** `npm run verify` (plugin contract, lists, all tests). No hosted CI is configured.

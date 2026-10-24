@@ -9,10 +9,12 @@
     "run": "node run-all.mjs"
   },
   "dependencies": {
+    "patchright": "^1.64.1",
     "playwright": "^1.64.1",
     "puppeteer": "^25.16.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "rebrowser-puppeteer": "^25.14.101",
     "selenium-webdriver": "^4.51.0"
   }
 }

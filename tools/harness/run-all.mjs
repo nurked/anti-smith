@@ -21,6 +21,9 @@ const RUNS = [
   { name: 'puppeteer-chrome-headless', open: () => openPuppeteer({ browser: 'chrome', headless: true }) },
   { name: 'puppeteer-stealth-chrome-headless', open: () => openPuppeteer({ browser: 'chrome', headless: true, stealth: true }) },
   { name: 'puppeteer-firefox-bidi-headless', open: () => openPuppeteer({ browser: 'firefox', headless: true }) },
+  { name: 'patchright-chrome-headless', open: () => openPlaywright({ engine: 'chromium', headless: true, module: 'patchright', channel: 'chrome' }) },
+  { name: 'patchright-chrome-headed', open: () => openPlaywright({ engine: 'chromium', headless: false, module: 'patchright', channel: 'chrome' }) },
+  { name: 'rebrowser-puppeteer-chrome-headless', open: () => openPuppeteer({ browser: 'chrome', headless: true, module: 'rebrowser-puppeteer' }) },
   { name: 'selenium-chrome-headless', open: () => openSelenium({ browser: 'chrome', headless: true }) },
   { name: 'selenium-firefox-headed', open: () => openSelenium({ browser: 'firefox', headless: false }) },
 ];

@@ -163,6 +163,19 @@ Findings:
 
 Still missing: human baselines. Every rule above has only been measured against machines.
 
+### Fifth observation: patched automation forks (2026-10-24)
+
+| Run | Score | Evidence | What fired |
+| --- | :-: | --- | --- |
+| rebrowser-puppeteer, Chrome headless | 73 | environment + behaviour | headless (HeadlessChrome UA), mouse, keyboard, scroll-then-click, sensitive-reads (suspicious: no stack marker) |
+| Patchright, Chrome headless | 63 | environment + behaviour | headless (HeadlessChrome UA), mouse, keyboard |
+| **Patchright, Chrome headed** | **23** | **behaviour only** | mouse-dynamics (detected), keyboard-dynamics (suspicious) |
+
+- Both forks hide `navigator.webdriver` and avoid `Runtime.enable`; neither leaves deterministic evidence.
+- **Patchright evaluates in an isolated world by default**, so its scraping never touches main-world hooks (`sensitive-reads` stayed clean) — even the harness had to opt into the main world to read the lab's export.
+- **Headed Patchright is the hardest client-side case measured so far:** only behaviour gives it away, and at 23 it stays under the 40 threshold, so `responder.redact` (on-score mode) would not engage. Pages with the most sensitive data should use redaction `mode: 'always'` plus step-up, and rely on server-side controls, rather than on the score.
+- Raising behavioural weights would catch it, but cannot be justified until human and assistive-technology baselines exist (test plan #1, #8). This is now the most important open measurement.
+
 ## 5. Beyond the page: the layers that actually hold
 
 Client-side detection alone cannot protect the data, because the data is already in the agent's browser by the time the page decides anything. The durable controls are:

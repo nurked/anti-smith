@@ -13,9 +13,10 @@ const exportFn = (label) => window.antiSmith.exportJSON({ label, exportedFrom: '
 
 // ---------------------------------------------------------------- Playwright
 
-export async function openPlaywright({ engine, headless }) {
-  const pw = await import('playwright');
-  const browser = await pw[engine].launch({ headless });
+export async function openPlaywright({ engine, headless, module = 'playwright', channel }) {
+  // module: 'playwright' or 'patchright' (a drop-in fork that hides CDP leaks; recommends channel 'chrome').
+  const pw = await import(module);
+  const browser = await pw[engine].launch({ headless, ...(channel ? { channel } : {}) });
   const page = await browser.newPage();
   const adapter = {
     goto: (url) => page.goto(url),
@@ -23,7 +24,9 @@ export async function openPlaywright({ engine, headless }) {
     type: (sel, text) => page.locator(sel).pressSequentially(text),
     fill: (sel, text) => page.locator(sel).fill(text),
     scrape: () => page.evaluate(scrape),
-    exportResults: (label) => page.evaluate(exportFn, label),
+    // Patchright evaluates in an isolated world by default (that is its stealth); the export lives in the
+    // page's main world, so ask for it explicitly. The scrape above stays isolated, as a Patchright user's would.
+    exportResults: (label) => (module === 'patchright' ? page.evaluate(exportFn, label, undefined, false) : page.evaluate(exportFn, label)),
     sleep,
   };
   return { adapter, close: () => browser.close() };
@@ -31,9 +34,11 @@ export async function openPlaywright({ engine, headless }) {
 
 // ----------------------------------------------------------------- Puppeteer
 
-export async function openPuppeteer({ browser: product = 'chrome', headless, stealth = false }) {
+export async function openPuppeteer({ browser: product = 'chrome', headless, stealth = false, module = 'puppeteer' }) {
   let launcher;
-  if (stealth) {
+  if (module !== 'puppeteer') {
+    launcher = (await import(module)).default; // e.g. rebrowser-puppeteer, a patched drop-in
+  } else if (stealth) {
     const { default: puppeteerExtra } = await import('puppeteer-extra');
     const { default: Stealth } = await import('puppeteer-extra-plugin-stealth');
     puppeteerExtra.use(Stealth());

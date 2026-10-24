@@ -2,7 +2,7 @@
 
 Site-side defence against browser automation and AI agents on pages with sensitive personal data. Think "uBlock Origin, installed by the website": a small engine plus community-maintained plugins, each one a way of spotting (and later handling) an agent.
 
-**Status: research lab, detect-only.** Nothing is blocked. The first job is to measure which traces Playwright, Puppeteer, stealth kits, extension agents such as Claude for Chrome, agentic browsers and computer-use agents actually leave — and how often people (including assistive-technology users) leave the same traces.
+**Status: research lab.** Detection is on by default; responders that change the page (redaction, WebAuthn step-up) are opt-in and never block — see ADR 0005. The first job is to measure which traces Playwright, Puppeteer, stealth kits, extension agents such as Claude for Chrome, agentic browsers and computer-use agents actually leave — and how often people (including assistive-technology users) leave the same traces.
 
 ## Quick start
 
@@ -14,7 +14,7 @@ npm start
 
 Open http://127.0.0.1:8787/apps/lab/ — a dashboard of every detector, a live event log with JSON export, and a test area (login form, buttons, a fake sensitive table, links, a textarea) for agents to act on. Events are also appended to `var/detections.log`.
 
-Useful URL parameters: `?skip=detector.debugger-timing` (stop debugger pauses), `?only=detector.mouse-dynamics,detector.input-trust`.
+Useful URL parameters: `?skip=detector.debugger-timing` (stop debugger pauses), `?only=detector.mouse-dynamics,detector.input-trust`, `?enable=responder.redact,responder.step-up` (opt-in responders; open the lab on http://localhost:8787 for WebAuthn).
 
 ```bash
 npm run verify
@@ -28,10 +28,15 @@ Checks every plugin against the contract and runs all tests (locally; no hosted 
 | --- | --- |
 | [`packages/core`](packages/core/src) | Runtime: plugin contract, scoring, event log, DOM ownership, safe API observation |
 | [`packages/testkit`](packages/testkit/src) | Run a plugin in Node with fake browser globals |
+| [`packages/server`](packages/server/src) | Web Bot Auth verification, request signals, canary scanning, session correlation, WebAuthn step-up, HTTP handler |
+| [`packages/embed`](packages/embed/src) | Put anti-smith on a real page: `startAntiSmith()`, script-tag bootstrap, React/Vue/htmx integrations |
+| [`lists`](lists) | Signal data (automation globals, agent extensions, agent user agents, …), versioned separately from code |
 | [`plugins/detectors`](plugins/detectors) | 18 detectors: webdriver, automation globals, headless signs, permission consistency, patched natives, CDP console probe, debugger timing, foreign DOM, untrusted events, mouse/keyboard dynamics, focus/scroll/hidden-tab input, interaction timing, scroll-then-click, sensitive reads, capture hints, extension probe, honeypots + canary |
-| [`plugins/responders`](plugins/responders) | `on-detected` stub hook |
+| [`plugins/responders`](plugins/responders) | `on-detected` hook, `notify-server`, and opt-in `redact` + `step-up` (WebAuthn) |
+| [`plugins/scorers`](plugins/scorers) | `evidence-classes`: weighted score plus deterministic / environment / behaviour breakdown |
 | [`plugins/sinks`](plugins/sinks) | `http-log` (batches to `POST /log`, `sendBeacon` on hide) |
 | [`apps/lab`](apps/lab) | The lab page and its server |
+| [`apps/embed-demo`](apps/embed-demo) | A page using `packages/embed` the way a real site would |
 | [`tools/harness`](tools/harness) | Drives the lab with Playwright, Puppeteer (+ stealth) and Selenium; prints a detection matrix (own dependencies) |
 | [`docs/`](docs) | Research, architecture, plugin API, test plan, roadmap, ADRs, generated catalog |
 

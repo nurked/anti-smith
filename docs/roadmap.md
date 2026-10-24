@@ -11,7 +11,8 @@
 ## Phase 1 — Measurement
 
 - [x] `tools/harness`: Playwright, Puppeteer (+ stealth), Selenium runs as scripts, with a results matrix
-- [ ] Harness runs for patched Playwright forks and other anti-detect browsers
+- [x] Harness runs for patched forks: Patchright (headless, headed) and rebrowser-puppeteer — headed Patchright scores 23, behaviour only
+- [ ] Harness runs for anti-detect browsers (Camoufox, commercial ones) and browser-use style agent frameworks
 - [ ] Run the full [test plan](test-plan.md), including assistive-tech sessions
 - [ ] Results matrix in research.md; per-detector results in each README
 - [x] Scorer is a plugin kind; `scorer.evidence-classes` adds deterministic / environment / behaviour breakdown (ADR 0005)
