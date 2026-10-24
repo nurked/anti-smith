@@ -8,6 +8,7 @@
  *   GET  /api/sessions     → correlated sessions (lab only: client findings + server signals)
  *   POST /log              → client events (sink.http-log)            ┐
  *   POST /api/flag         → session flags (responder.notify-server)  ├ handled by @anti-smith/server
+ *   POST /api/step-up/*    → WebAuthn step-up (responder.step-up)     │
  *   *    /__as_trap/*      → honeypot targets, 204                    ┘
  *   GET  /apps|packages|plugins/...  → static files
  *
@@ -21,7 +22,7 @@ import http from 'node:http';
 import { readFile, appendFile, mkdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createAntiSmithHandler } from '../../packages/server/src/index.js';
+import { createAntiSmithHandler, createStepUp } from '../../packages/server/src/index.js';
 import { discoverPlugins } from '../../tools/lib/discover-plugins.mjs';
 import { loadLists } from '../../tools/lib/load-lists.mjs';
 
@@ -49,7 +50,14 @@ const record = (entry) => {
   writing = writing.then(() => appendFile(LOG_FILE, `${JSON.stringify(entry)}\n`)).catch((error) => console.error(error));
 };
 
-const antiSmith = createAntiSmithHandler({ lists: await loadLists(ROOT), onRecord: record });
+const antiSmith = createAntiSmithHandler({
+  lists: await loadLists(ROOT),
+  onRecord: record,
+  // Step-up for one fake lab user. Registration on demand is a lab convenience only (ADR 0005).
+  stepUp: createStepUp({ rpId: 'localhost', origins: [`http://localhost:${PORT}`] }),
+  getUserId: () => 'lab-user',
+  allowRegistration: true,
+});
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host ?? 'localhost'}`);

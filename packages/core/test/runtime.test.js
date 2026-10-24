@@ -114,6 +114,18 @@ test('lists fill config between plugin defaults and host config', async () => {
   assert.deepEqual(runtime.log.all()[0].data.lists, { globals: '2026.10.24' });
 });
 
+test('plugins share services by name; they disappear on stop', async () => {
+  let consumer;
+  const provider = meta('responder.provider', 'responder', { onScore() {}, start: (ctx) => ctx.provide('greet', (n) => `hi ${n}`) });
+  const user = meta('responder.user', 'responder', { onScore() {}, start: (ctx) => void (consumer = ctx) });
+  const runtime = createRuntime({ plugins: [user, provider], window: fakeWindow() });
+  await runtime.start();
+  assert.equal(consumer.service('greet')('ivan'), 'hi ivan');
+  assert.equal(consumer.service('missing'), null);
+  runtime.stop();
+  assert.equal(consumer.service('greet'), null);
+});
+
 test('observeCall watches without changing behaviour and restores on stop', async () => {
   const target = { add: (a, b) => a + b };
   const original = target.add;

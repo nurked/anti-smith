@@ -25,10 +25,12 @@
 
 ## Phase 3 — Responders
 
-- [ ] `responder.redact` — mask `[data-as-sensitive]` content above a threshold, reveal one field on demand
-- [ ] `responder.step-up` — require WebAuthn user verification before reveals
-- [ ] `responder.notify-server` — flag the session server-side
-- [ ] Policy: deny only on deterministic signals (see research.md §6)
+- [x] `responder.redact` — removes sensitive values from the DOM (always or above a threshold); one field at a time on a trusted click/key, optionally behind step-up
+- [x] `responder.step-up` + server WebAuthn (ES256/EdDSA, UV required, single-use challenges, counters); `tools/harness/step-up-check.mjs` shows a virtual authenticator cannot pass for a registered credential
+- [x] `responder.notify-server` — flags the session server-side at each new level
+- [x] Policy: responders opt-in, behaviour adds friction only ([ADR 0005](adr/0005-responders-opt-in.md))
+- [ ] Deny responder for deterministic signals (signed agent on a deny-list, honeypot hit, untrusted events on sensitive actions)
+- [ ] Assistive-technology runs before enabling redaction anywhere real
 
 ## Phase 4 — Embeddable SDK
 

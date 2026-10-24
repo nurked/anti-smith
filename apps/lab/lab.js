@@ -18,6 +18,7 @@ const params = new URLSearchParams(location.search);
 const listParam = (name) => (params.get(name) ?? '').split(',').map((s) => s.trim()).filter(Boolean);
 const only = listParam('only');
 const skip = new Set(listParam('skip'));
+const enable = listParam('enable');
 
 const STATUS_ORDER = { detected: 0, suspicious: 1, error: 2, clean: 3, pending: 4, unsupported: 5 };
 const WEIGHT_ORDER = { strong: 0, medium: 1, weak: 2 };
@@ -48,7 +49,10 @@ async function main() {
   });
   showErrors(errors);
 
-  runtime = createRuntime({ plugins, config, lists });
+  // ?enable= switches on opt-in plugins (ADR 0005), e.g. ?enable=responder.redact,responder.step-up
+  const pluginConfig = { ...config.plugins };
+  for (const id of enable) pluginConfig[id] = { ...pluginConfig[id], enabled: true };
+  runtime = createRuntime({ plugins, config: { ...config, plugins: pluginConfig }, lists });
   // Lab only: exposed for debugging from the console. Never expose the runtime on a production page.
   window.antiSmith = runtime;
 

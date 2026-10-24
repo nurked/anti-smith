@@ -46,6 +46,7 @@ export function createRuntime(options = {}) {
   const cleanups = new Map();
   const ownPatches = new WeakSet();
   const changeListeners = new Set();
+  const services = new Map();
   let score = scorer([], config.scoring);
   let active = [];
   let started = false;
@@ -215,6 +216,18 @@ export function createRuntime(options = {}) {
       onCleanup(fn) {
         list.push(fn);
       },
+
+      /**
+       * Services let plugins cooperate without importing each other: one plugin
+       * provides a named function (responder.step-up provides "step-up"), others
+       * look it up at call time and must cope with it being absent.
+       */
+      provide(name, fn) {
+        if (services.has(name)) throw new Error(`service "${name}" is already provided by ${services.get(name).by}`);
+        services.set(name, { fn, by: plugin.id });
+        list.push(() => services.get(name)?.by === plugin.id && services.delete(name));
+      },
+      service: (name) => services.get(name)?.fn ?? null,
 
       /**
        * Observe calls to `target[key]` without changing behaviour: the original

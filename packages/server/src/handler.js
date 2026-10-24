@@ -12,6 +12,8 @@
  *   POST /log         client events from sink.http-log → records + session update
  *   POST /api/flag    responder.notify-server → session flag
  *   *    /__as_trap/* honeypot targets → trap-hit record, 204
+ *   POST /api/step-up/{register,assert}/{options,verify}
+ *                     responder.step-up, when `stepUp` (createStepUp) and `getUserId(req)` are given
  *
  * Every observation is passed to `onRecord(record)`; storage is the caller's choice.
  */
@@ -29,7 +31,10 @@ export function createAntiSmithHandler(options = {}) {
     verify = verifyWebBotAuth,
     verifyOptions = {},
     maxBodyBytes = 1024 * 1024,
-    paths = { log: '/log', flag: '/api/flag', trapPrefix: '/__as_trap/' },
+    paths = { log: '/log', flag: '/api/flag', trapPrefix: '/__as_trap/', stepUpPrefix: '/api/step-up/' },
+    stepUp = null,
+    getUserId = () => null,
+    allowRegistration = false,
   } = options;
   const agentUserAgents = lists['agent-user-agents']?.data ?? [];
 
@@ -52,6 +57,7 @@ export function createAntiSmithHandler(options = {}) {
     const path = (req.url ?? '').split('?')[0];
     if (req.method === 'POST' && path === paths.log) return handleLog(req, res);
     if (req.method === 'POST' && path === paths.flag) return handleFlag(req, res);
+    if (req.method === 'POST' && stepUp && path.startsWith(paths.stepUpPrefix)) return handleStepUp(req, res, path.slice(paths.stepUpPrefix.length));
     if (path.startsWith(paths.trapPrefix)) {
       const seen = await inspect(req);
       onRecord({ kind: 'trap-hit', path: req.url, ...seen.signals, serverFlags: seen.serverFlags });
@@ -92,6 +98,43 @@ export function createAntiSmithHandler(options = {}) {
     const session = store.flag(sessionId, String(payload.reason ?? 'client-flag'), { score: payload.score ?? null, contributors: payload.contributors ?? [] });
     onRecord({ kind: 'session-flag', sessionId, reason: payload.reason ?? 'client-flag', score: payload.score ?? null, server: seen.signals });
     reply(res, 200, JSON.stringify({ flagged: true, flags: session.flags.length }), 'application/json');
+    return true;
+  }
+
+  async function handleStepUp(req, res, action) {
+    const userId = await getUserId(req);
+    if (!userId) {
+      reply(res, 401, 'no signed-in user');
+      return true;
+    }
+    const payload = (await readJson(req, res)) ?? null;
+    if (payload === null) return true;
+    const sessionId = String(payload.sessionId ?? '');
+    let body;
+    switch (action) {
+      case 'register/options':
+      case 'register/verify':
+        if (!allowRegistration) {
+          reply(res, 403, 'registration is not allowed here');
+          return true;
+        }
+        body = action === 'register/options' ? stepUp.registrationOptions(userId) : stepUp.verifyRegistration(userId, payload.credential ?? {});
+        break;
+      case 'assert/options':
+        body = stepUp.assertionOptions(userId);
+        break;
+      case 'assert/verify':
+        body = stepUp.verifyAssertion(userId, payload.credential ?? {});
+        break;
+      default:
+        reply(res, 404, 'Not found');
+        return true;
+    }
+    if (action.endsWith('/verify')) {
+      onRecord({ kind: 'step-up', action, sessionId, verified: body.verified, reason: body.reason ?? null, receivedAt: new Date().toISOString() });
+      if (sessionId) store.update(sessionId, { lastStepUp: { action, verified: body.verified, at: new Date().toISOString() } });
+    }
+    reply(res, 200, JSON.stringify(body), 'application/json');
     return true;
   }
 
