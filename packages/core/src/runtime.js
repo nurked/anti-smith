@@ -396,6 +396,11 @@ export function createRuntime(options = {}) {
     plugins: () => registry.list().map(pluginMeta),
     /** Host pages call this for nodes they create after start, so DOM detectors ignore them. */
     claim: (node) => ownership.claim(node),
+    /**
+     * Call synchronously right after the page renders (React layout effect, Vue updated hook,
+     * htmx:afterSwap): DOM detectors take their pending records and treat those nodes as the page's.
+     */
+    adoptPending: () => services.get('adopt-mutations')?.fn() ?? 0,
     onChange(fn) {
       changeListeners.add(fn);
       return () => changeListeners.delete(fn);

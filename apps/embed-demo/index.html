@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Embed demo · anti-smith</title>
+    <!-- How a real site adds anti-smith: a config block and the bootstrap script. No global handle. -->
+    <script type="application/json" id="anti-smith-config">
+      {
+        "plugins": [
+          "/plugins/detectors/webdriver/index.js",
+          "/plugins/detectors/dom-mutations/index.js",
+          "/plugins/detectors/mouse-dynamics/index.js",
+          "/plugins/sinks/http-log/index.js",
+          "/plugins/responders/notify-server/index.js"
+        ],
+        "lists": "/api/lists",
+        "config": { "plugins": { "sink.http-log": { "endpoint": "/log" } } }
+      }
+    </script>
+    <script type="module" src="/packages/embed/src/auto.js"></script>
+    <style>
+      body { font: 15px/1.5 system-ui, sans-serif; margin: 0; padding: 16px; background: #fff; color: #1b1f24; }
+      @media (prefers-color-scheme: dark) { body { background: #111418; color: #e6e9ee; } }
+      main { max-width: 720px; margin: 0 auto; display: grid; gap: 16px; }
+      button { font: inherit; padding: 6px 12px; cursor: pointer; }
+      #status { font-family: ui-monospace, Menlo, monospace; font-size: 13px; white-space: pre-wrap; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Embed demo</h1>
+      <p>This page loads anti-smith through <code>packages/embed/src/auto.js</code>, as a real site would. The app below renders rows at runtime and adopts them; the second button simulates an extension injecting a node.</p>
+      <div>
+        <button id="render" type="button">App renders a row</button>
+        <button id="inject" type="button">Simulate extension injecting a node</button>
+      </div>
+      <ul id="rows"></ul>
+      <div id="status">waiting for anti-smith…</div>
+    </main>
+    <script type="module">
+      import { rendering } from '/packages/embed/src/integrations.js';
+
+      // The page receives a narrow handle (score, claim, adoptPending) — not the runtime.
+      document.addEventListener('anti-smith:ready', ({ detail: antiSmith }) => {
+        const status = document.getElementById('status');
+        const show = (result) => {
+          status.textContent = `score ${result.score} (${result.level})\n` + result.contributors.map((c) => `  ${c.id}: ${c.status}`).join('\n');
+          antiSmith.claim(status); // the status text is the page's own too
+        };
+        antiSmith.onScore(show);
+        show(antiSmith.score());
+
+        let n = 0;
+        document.getElementById('render').addEventListener('click', () => {
+          rendering(antiSmith, () => {
+            const li = document.createElement('li');
+            li.textContent = `Row ${++n} rendered by the app`;
+            document.getElementById('rows').append(li);
+          });
+        });
+        document.getElementById('inject').addEventListener('click', () => {
+          // Not adopted: this is what an extension overlay looks like to the page.
+          const div = document.createElement('div');
+          div.setAttribute('style', 'position:fixed;inset:auto 8px 8px auto;padding:4px 8px;background:#f5a;color:#000');
+          div.textContent = 'injected overlay';
+          document.body.append(div);
+        });
+      }, { once: true });
+    </script>
+  </body>
+</html>

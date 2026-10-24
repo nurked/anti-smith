@@ -42,7 +42,7 @@ Override in the host config under `plugins['detector.dom-mutations']`. Defaults:
 
 - Many ordinary extensions (password managers, Grammarly, translators, ad blockers) inject DOM too, so this tops out at suspicious.
 - Closed shadow roots and shadow roots attached from an isolated world are not visible; only main-world attachShadow calls are observed.
-- Pages that build DOM at runtime must claim their nodes (runtime.claim) or mark containers with data-as-ignore, or they will flag themselves.
+- Pages that build DOM at runtime must call runtime.adoptPending() right after rendering (see packages/embed integrations), claim nodes with runtime.claim, or mark containers with data-as-ignore — or they will flag themselves. Anything injected in the same task as a page render is adopted along with it.
 
 ## Test results
 
@@ -55,4 +55,4 @@ Fill in from the runs in [docs/test-plan.md](../../../docs/test-plan.md).
 | Playwright default | | |
 | Playwright + stealth | | |
 | Puppeteer | | |
-| Claude for Chrome | | |
+| Claude for Chrome | suspicious — empty `<div>` host added ~0.9 s after load | |

@@ -34,8 +34,9 @@
 
 ## Phase 4 — Embeddable SDK
 
-- [ ] `packages/embed` — script-tag/npm entry with a chosen plugin set, no global runtime handle
-- [ ] Framework integrations that claim rendered DOM (React, Vue, server-rendered pages)
+- [x] `packages/embed` — `startAntiSmith()` for bundled apps and a script-tag bootstrap (`auto.js`), narrow handle, no global; see `apps/embed-demo`
+- [x] Framework integrations via `adoptPending()` (React layout-effect hook, Vue plugin, htmx/Turbo/Unpoly swap events, plain `rendering()`)
+- [ ] Verify the Vue integration's timing against the MutationObserver in a real Vue app
 - [ ] Hardening: runtime integrity, tamper reporting, server verification of client results
 - [ ] Production pilot on one sensitive page, with a DPIA and an accessibility review
 

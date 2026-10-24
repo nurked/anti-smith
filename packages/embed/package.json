@@ -1,0 +1,12 @@
+{
+  "name": "@anti-smith/embed",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Put anti-smith on a real page: a start function for bundled apps, a script-tag bootstrap, and framework integrations. No global runtime handle.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./auto": "./src/auto.js",
+    "./integrations": "./src/integrations.js"
+  }
+}

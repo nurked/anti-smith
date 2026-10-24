@@ -19,7 +19,7 @@ export default {
   limitations: [
     'Many ordinary extensions (password managers, Grammarly, translators, ad blockers) inject DOM too, so this tops out at suspicious.',
     'Closed shadow roots and shadow roots attached from an isolated world are not visible; only main-world attachShadow calls are observed.',
-    'Pages that build DOM at runtime must claim their nodes (runtime.claim) or mark containers with data-as-ignore, or they will flag themselves.',
+    'Pages that build DOM at runtime must call runtime.adoptPending() right after rendering (see packages/embed integrations), claim nodes with runtime.claim, or mark containers with data-as-ignore — or they will flag themselves. Anything injected in the same task as a page render is adopted along with it.',
   ],
   defaults: {
     maxLogged: 200,
@@ -78,6 +78,19 @@ export default {
       }
     });
     observer.observe(doc.documentElement, { childList: true, subtree: true, attributes: true });
+
+    // Pages that render DOM at runtime call runtime.adoptPending() straight after rendering, in the
+    // same task: it drains records the observer has not delivered yet and claims their nodes.
+    ctx.provide('adopt-mutations', () => {
+      let adopted = 0;
+      for (const record of observer.takeRecords()) {
+        for (const node of record.addedNodes ?? []) {
+          ctx.own(node);
+          adopted++;
+        }
+      }
+      return adopted;
+    });
 
     // Main-world shadow roots on page elements (extensions in an isolated world bypass this).
     if (win.Element?.prototype) {
