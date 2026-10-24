@@ -4,6 +4,8 @@ Site-side defence against browser automation and AI agents on pages with sensiti
 
 **Status: research lab.** Detection is on by default; responders that change the page (redaction, WebAuthn step-up) are opt-in and never block — see ADR 0005. The first job is to measure which traces Playwright, Puppeteer, stealth kits, extension agents such as Claude for Chrome, agentic browsers and computer-use agents actually leave — and how often people (including assistive-technology users) leave the same traces.
 
+**→ [How to use it](docs/getting-started.md)** — install it on your site, step by step.
+
 ## Quick start
 
 Requires Node 20+. No `npm install` needed — there are no dependencies.
@@ -45,6 +47,7 @@ Checks every plugin against the contract and runs all tests (locally; no hosted 
 
 ## Read next
 
+0. [docs/getting-started.md](docs/getting-started.md) — how to install and use it on your site
 1. [docs/research.md](docs/research.md) — threat model, what a page can and cannot see, signal catalogue, first results, the layers beyond client-side detection
 2. [docs/architecture.md](docs/architecture.md) — how the engine and plugins fit together
 3. [docs/plugin-api.md](docs/plugin-api.md) — writing a plugin

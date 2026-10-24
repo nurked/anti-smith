@@ -33,5 +33,15 @@ export function handleFor(runtime) {
      * protection stronger; there is deliberately no host call that unlocks.
      */
     trigger: (responder = null) => runtime.emit('protection-trigger', { responder }),
+    /**
+     * Run WebAuthn step-up (responder.step-up must be loaded). On a page whose
+     * step-up config allows registration — e.g. account settings, behind login —
+     * this is how a person sets up the passkey that later unlocks protected pages.
+     * Resolves to { verified, reason }; it never unlocks anything by itself.
+     */
+    stepUp: (reason = 'host') => {
+      const stepUp = runtime.service('step-up');
+      return stepUp ? stepUp(reason) : Promise.resolve({ verified: false, reason: 'responder.step-up is not loaded' });
+    },
   });
 }

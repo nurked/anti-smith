@@ -31,11 +31,12 @@ export function createAntiSmithHandler(options = {}) {
     verify = verifyWebBotAuth,
     verifyOptions = {},
     maxBodyBytes = 1024 * 1024,
-    paths = { log: '/log', flag: '/api/flag', trapPrefix: '/__as_trap/', stepUpPrefix: '/api/step-up/' },
+    paths: pathOverrides = {},
     stepUp = null,
     getUserId = () => null,
     allowRegistration = false,
   } = options;
+  const paths = { log: '/log', flag: '/api/flag', trapPrefix: '/__as_trap/', stepUpPrefix: '/api/step-up/', ...pathOverrides };
   const agentUserAgents = lists['agent-user-agents']?.data ?? [];
 
   /** Signals, flags, Web Bot Auth and canary tokens for one request. */

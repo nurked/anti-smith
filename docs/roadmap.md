@@ -40,6 +40,8 @@
 - [x] `packages/embed` — `startAntiSmith()` for bundled apps and a script-tag bootstrap (`auto.js`), narrow handle, no global; see `apps/embed-demo`
 - [x] Framework integrations via `adoptPending()` (React layout-effect hook, Vue plugin, htmx/Turbo/Unpoly swap events, plain `rendering()`)
 - [ ] Verify the Vue integration's timing against the MutationObserver in a real Vue app
+- [x] Install guide ([getting-started.md](getting-started.md)) and `tools/export.mjs` (browser files, bundled lists, starter config)
+- [ ] npm packages for core, embed and server (today: copy the files)
 - [ ] Hardening: runtime integrity, tamper reporting, server verification of client results
 - [ ] Production pilot on one sensitive page, with a DPIA and an accessibility review
 

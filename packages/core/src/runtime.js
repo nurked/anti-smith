@@ -421,6 +421,8 @@ export function createRuntime(options = {}) {
      * (e.g. "protection-trigger" from a test control). Plugins decide which host events they honour.
      */
     emit: (type, data = null) => log.push('host', type, data),
+    /** A function provided by a plugin (ctx.provide), or null. */
+    service: (name) => services.get(name)?.fn ?? null,
     onChange(fn) {
       changeListeners.add(fn);
       return () => changeListeners.delete(fn);
