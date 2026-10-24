@@ -8,7 +8,13 @@
  *
  * Engages when the page's protection level (data-as-protection on <html>, or
  * config.level) is at least `minLevel` and the score reaches `threshold`.
+ *
+ * Manual trigger: a `protection-trigger` host event (handle.trigger(), e.g. the CRM's
+ * test controls) engages it at once, regardless of level and threshold. Only
+ * `human-verified` events sent by a protection responder can undo it — never host events.
  */
+const NO_RESULT = { score: 0, level: 'clean', contributors: [] };
+
 export default {
   id: 'responder.agent-banner',
   kind: 'responder',
@@ -31,39 +37,61 @@ export default {
     const s = ctx.state;
     s.ready = true;
     ctx.subscribe((event) => {
-      if (event.type !== 'human-verified' || !s.banner) return;
-      s.banner.remove();
-      s.banner = null;
-      s.verified = true;
+      if (event.type === 'human-verified' && fromResponder(event)) {
+        s.banner?.remove();
+        s.banner = null;
+        s.verified = true;
+      } else if (triggeredFor(event, ctx)) {
+        s.verified = false;
+        engage(ctx, s.lastResult ?? NO_RESULT, 'manual trigger');
+      }
     });
     ctx.onCleanup(() => s.banner?.remove());
   },
 
   onScore(result, ctx) {
-    const { state: s, config, document: doc } = ctx;
-    if (!s.ready || s.banner || s.verified || !doc?.body) return;
+    const { state: s, config } = ctx;
+    s.lastResult = result;
+    if (!s.ready || s.verified) return;
     if (pageLevel(ctx) < config.minLevel || result.score < threshold(ctx)) return;
-
-    const banner = doc.createElement('div');
-    banner.setAttribute('role', 'status');
-    banner.setAttribute('data-as-banner', '');
-    banner.setAttribute(
-      'style',
-      'position:sticky;top:0;z-index:2147483646;display:flex;gap:12px;align-items:center;padding:10px 16px;' +
-        'background:#7a1f1f;color:#fff;font:600 14px/1.4 system-ui,sans-serif;box-shadow:0 2px 6px rgba(0,0,0,.25)',
-    );
-    const text = doc.createElement('span');
-    text.textContent = config.message;
-    const detail = doc.createElement('span');
-    detail.setAttribute('style', 'font-weight:400;opacity:.85');
-    detail.textContent = `(score ${result.score}: ${result.contributors.map((c) => c.id.replace(/^detector\./, '')).join(', ')})`;
-    banner.append(text, detail);
-    ctx.own(banner);
-    doc.body.prepend(banner);
-    s.banner = banner;
-    ctx.log('shown', { score: result.score, level: pageLevel(ctx) });
+    engage(ctx, result, 'score');
   },
 };
+
+function engage(ctx, result, why) {
+  const { state: s, config, document: doc } = ctx;
+  if (!s.ready || s.banner || !doc?.body) return;
+  const banner = doc.createElement('div');
+  banner.setAttribute('role', 'status');
+  banner.setAttribute('data-as-banner', '');
+  banner.setAttribute(
+    'style',
+    'position:sticky;top:0;z-index:2147483646;display:flex;gap:12px;align-items:center;padding:10px 16px;' +
+      'background:#7a1f1f;color:#fff;font:600 14px/1.4 system-ui,sans-serif;box-shadow:0 2px 6px rgba(0,0,0,.25)',
+  );
+  const text = doc.createElement('span');
+  text.textContent = config.message;
+  const detail = doc.createElement('span');
+  detail.setAttribute('style', 'font-weight:400;opacity:.85');
+  detail.textContent =
+    why === 'manual trigger'
+      ? '(triggered manually)'
+      : `(score ${result.score}: ${result.contributors.map((c) => c.id.replace(/^detector\./, '')).join(', ')})`;
+  banner.append(text, detail);
+  ctx.own(banner);
+  doc.body.prepend(banner);
+  s.banner = banner;
+  ctx.log('shown', { why, score: result.score, level: pageLevel(ctx) });
+}
+
+/** Host events may trigger protection; only a responder (after step-up) may announce human-verified. */
+function fromResponder(event) {
+  return typeof event.source === 'string' && event.source.startsWith('responder.');
+}
+
+function triggeredFor(event, ctx) {
+  return event.type === 'protection-trigger' && (event.data?.responder ?? ctx.id) === ctx.id;
+}
 
 function threshold(ctx) {
   const fromPage = Number(ctx.document?.documentElement?.getAttribute(ctx.config.thresholdAttribute));

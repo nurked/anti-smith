@@ -13,6 +13,10 @@ text or a screenshot get a placeholder. A person gets it back with a trusted
 click on "verify" plus WebAuthn step-up (responder.step-up); without step-up
 on the page, there is no way back except reloading as a person.
 
+Manual trigger: a `protection-trigger` host event (handle.trigger(), e.g. the CRM's
+test controls) engages it at once, regardless of level and threshold. Only
+`human-verified` events sent by a protection responder can undo it — never host events.
+
 ## Configuration
 
 Override in the host config under `plugins['responder.lockout']`. Defaults:

@@ -126,6 +126,15 @@ test('plugins share services by name; they disappear on stop', async () => {
   assert.equal(consumer.service('greet'), null);
 });
 
+test('host events reach subscribed plugins with source "host"', async () => {
+  const seen = [];
+  const listener = meta('responder.listener', 'responder', { onScore() {}, start: (ctx) => ctx.subscribe((e) => e.type === 'ping' && seen.push(e.source)) });
+  const runtime = createRuntime({ plugins: [listener], window: fakeWindow() });
+  await runtime.start();
+  runtime.emit('ping', { n: 1 });
+  assert.deepEqual(seen, ['host']);
+});
+
 test('observeCall watches without changing behaviour and restores on stop', async () => {
   const target = { add: (a, b) => a + b };
   const original = target.add;

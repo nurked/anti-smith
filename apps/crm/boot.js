@@ -32,4 +32,41 @@ export function showDebug(handle) {
   };
   handle.onScore(render);
   render(handle.score());
+  showTestControls(handle);
+}
+
+/**
+ * Trigger box for testers: engage a protection layer now, whatever the score and
+ * page level, or reset by reloading (protection state lives only in memory).
+ * Triggers only ever add protection; nothing here can unlock a page.
+ */
+export function showTestControls(handle) {
+  const box = document.createElement('aside');
+  box.setAttribute('aria-label', 'Test controls');
+  box.className = 'test-controls';
+  const title = document.createElement('strong');
+  title.textContent = 'Test controls';
+  box.append(title);
+  const actions = [
+    ['Banner', 'responder.agent-banner'],
+    ['Lockout', 'responder.lockout'],
+    ['Agent notice', 'responder.agent-notice'],
+    ['All three', null],
+  ];
+  for (const [label, responder] of actions) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = label;
+    button.addEventListener('click', () => handle.trigger(responder));
+    box.append(button);
+  }
+  const reset = document.createElement('button');
+  reset.type = 'button';
+  reset.className = 'secondary';
+  reset.textContent = 'Reset';
+  reset.title = 'Reload the page: protection starts over from the score';
+  reset.addEventListener('click', () => location.reload());
+  box.append(reset);
+  handle.claim(box); // the page's own UI, so the DOM detector does not flag it
+  document.body.append(box);
 }

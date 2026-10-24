@@ -14,7 +14,7 @@ npm start
 
 Open http://127.0.0.1:8787/apps/lab/ — a dashboard of every detector, a live event log with JSON export, and a test area (login form, buttons, a fake sensitive table, links, a textarea) for agents to act on. Events are also appended to `var/detections.log`.
 
-Fake CRM for testing protection levels: http://localhost:8787/crm (switch levels in its header; `?threshold=N` changes how early protection engages).
+Fake CRM for testing protection levels: http://localhost:8787/crm (switch levels in its header; `?threshold=N` changes how early protection engages; the Test controls box forces a layer on demand).
 
 Useful URL parameters: `?skip=detector.debugger-timing` (stop debugger pauses), `?only=detector.mouse-dynamics,detector.input-trust`, `?enable=responder.redact,responder.step-up` (opt-in responders; open the lab on http://localhost:8787 for WebAuthn).
 

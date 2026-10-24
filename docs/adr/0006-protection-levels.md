@@ -17,6 +17,7 @@ Three independent responders, each engaging when the page's protection level (`<
 | 3 | + `responder.agent-notice` | Everything in `<body>` is detached; the only readable element is a notice to AI agents (and to any person seeing it by mistake). Later additions to `<body>` are held back too. The page title changes. |
 
 - Levels 2 and 3 always keep a human path: "I am a person — verify" runs WebAuthn step-up (`responder.step-up`); success sends `human-verified`, which every protection responder honours. A behavioural score therefore still only adds friction (ADR 0005).
+- **Manual trigger.** A `protection-trigger` host event (`handle.trigger(id?)`, the CRM's test controls) engages a layer at once, regardless of level and threshold. Triggers only add protection. `human-verified` is honoured only when a responder sends it (after step-up), never from the host, so page scripts — or an agent holding the handle — cannot unlock content through events.
 - The notice states policy; it is not the protection. Reputable agents treat page text as untrusted content, so compliance cannot be assumed. The protection is that the content is no longer in the page.
 - **Wording is the site owner's**, set through `heading` / `paragraphs`. The default says automated access "is not authorised … breaks this site's terms of use and may be unlawful" — deliberately not a flat claim of illegality, which depends on jurisdiction and terms and should come from legal review.
 

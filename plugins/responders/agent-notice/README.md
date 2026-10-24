@@ -18,6 +18,10 @@ protection itself is that the content is gone. Wording is the site's to set
 (`heading`, `paragraphs`) — have it reviewed; don't assert legal claims that
 are not true for your jurisdiction and terms.
 
+Manual trigger: a `protection-trigger` host event (handle.trigger(), e.g. the CRM's
+test controls) engages it at once, regardless of level and threshold. Only
+`human-verified` events sent by a protection responder can undo it — never host events.
+
 ## Configuration
 
 Override in the host config under `plugins['responder.agent-notice']`. Defaults:

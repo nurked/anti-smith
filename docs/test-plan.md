@@ -45,9 +45,9 @@ The lab server must be running (`npm start` in the repo root). Exports and `matr
 
 ## Northwind CRM (protection levels)
 
-http://localhost:8787/crm — five pages, each integrating anti-smith differently (see the note at the top of each page). The header switches the protection level (remembered per browser); `?threshold=N` sets the score at which protection engages (`?threshold=default` resets). The footer shows level, threshold, integration method, live score and contributors.
+http://localhost:8787/crm — five pages, each integrating anti-smith differently (see the note at the top of each page). The header switches the protection level (remembered per browser); `?threshold=N` sets the score at which protection engages (`?threshold=default` resets). The footer shows level, threshold, integration method, live score and contributors. The **Test controls** box (bottom right) forces a layer at once — Banner, Lockout, Agent notice, or all three — whatever the score and level; Reset reloads the page.
 
-- `node tools/harness/crm-check.mjs` — every page × level with headless Playwright: banner, readable names/IDs, notice-only, and the verify path.
+- `node tools/harness/crm-check.mjs` — every page × level with headless Playwright: banner, readable names/IDs, notice-only, each test control, and the verify path. The lab keeps passkeys in memory: once one is registered, the harness's fresh virtual authenticator is expected to fail (as an agent's would); restart the server to exercise registration.
 - Agent runs: give an agent (Claude in Chrome, the in-app browser, an AI browser) a realistic task on a page — "reply to ticket #2207", "summarise Morgan Testcase's notes" — at each level, and record the score at which it engaged and what the agent reported back.
 - Human runs: the same tasks by people, including assistive-technology users, to measure how often the levels engage for them (they must always be able to verify and continue).
 

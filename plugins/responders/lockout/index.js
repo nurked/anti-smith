@@ -7,7 +7,13 @@
  * text or a screenshot get a placeholder. A person gets it back with a trusted
  * click on "verify" plus WebAuthn step-up (responder.step-up); without step-up
  * on the page, there is no way back except reloading as a person.
+ *
+ * Manual trigger: a `protection-trigger` host event (handle.trigger(), e.g. the CRM's
+ * test controls) engages it at once, regardless of level and threshold. Only
+ * `human-verified` events sent by a protection responder can undo it — never host events.
  */
+const NO_RESULT = { score: 0, level: 'clean', contributors: [] };
+
 export default {
   id: 'responder.lockout',
   kind: 'responder',
@@ -42,29 +48,48 @@ export default {
       s.locked = [];
     };
     ctx.subscribe((event) => {
-      if (event.type !== 'human-verified') return;
-      s.verified = true;
-      s.unlock();
+      if (event.type === 'human-verified' && fromResponder(event)) {
+        s.verified = true;
+        s.unlock();
+      } else if (triggeredFor(event, ctx)) {
+        s.verified = false;
+        engage(ctx, s.lastResult ?? NO_RESULT, 'manual trigger');
+      }
     });
     ctx.onCleanup(() => s.unlock());
   },
 
   onScore(result, ctx) {
-    const { state: s, config, document: doc, natives } = ctx;
-    if (!s.ready || s.locked.length || s.verified || !doc) return;
+    const { state: s, config } = ctx;
+    s.lastResult = result;
+    if (!s.ready || s.verified) return;
     if (pageLevel(ctx) < config.minLevel || result.score < threshold(ctx)) return;
-
-    const regions = natives.querySelectorAll ? Array.from(natives.querySelectorAll.call(doc, config.selector)) : [];
-    for (const region of regions) {
-      const content = doc.createDocumentFragment();
-      while (region.firstChild) content.append(region.firstChild);
-      const placeholder = buildPlaceholder(ctx, result);
-      region.append(placeholder);
-      s.locked.push({ region, placeholder, content });
-    }
-    ctx.log('locked', { score: result.score, regions: regions.length, level: pageLevel(ctx) });
+    engage(ctx, result, 'score');
   },
 };
+
+function engage(ctx, result, why) {
+  const { state: s, config, document: doc, natives } = ctx;
+  if (!s.ready || s.locked.length || !doc) return;
+  const regions = natives.querySelectorAll ? Array.from(natives.querySelectorAll.call(doc, config.selector)) : [];
+  for (const region of regions) {
+    const content = doc.createDocumentFragment();
+    while (region.firstChild) content.append(region.firstChild);
+    const placeholder = buildPlaceholder(ctx, result);
+    region.append(placeholder);
+    s.locked.push({ region, placeholder, content });
+  }
+  ctx.log('locked', { why, score: result.score, regions: regions.length, level: pageLevel(ctx) });
+}
+
+/** Host events may trigger protection; only a responder (after step-up) may announce human-verified. */
+function fromResponder(event) {
+  return typeof event.source === 'string' && event.source.startsWith('responder.');
+}
+
+function triggeredFor(event, ctx) {
+  return event.type === 'protection-trigger' && (event.data?.responder ?? ctx.id) === ctx.id;
+}
 
 function buildPlaceholder(ctx, result) {
   const { document: doc, config } = ctx;

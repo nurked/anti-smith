@@ -416,6 +416,11 @@ export function createRuntime(options = {}) {
      * htmx:afterSwap): DOM detectors take their pending records and treat those nodes as the page's.
      */
     adoptPending: () => services.get('adopt-mutations')?.fn() ?? 0,
+    /**
+     * Host events: logged with source "host" and delivered to every plugin subscribed to the log
+     * (e.g. "protection-trigger" from a test control). Plugins decide which host events they honour.
+     */
+    emit: (type, data = null) => log.push('host', type, data),
     onChange(fn) {
       changeListeners.add(fn);
       return () => changeListeners.delete(fn);

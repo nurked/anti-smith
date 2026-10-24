@@ -27,5 +27,11 @@ export function handleFor(runtime) {
     onScore: (fn) => runtime.onChange((snapshot) => fn(snapshot.score)),
     claim: (node) => runtime.claim(node),
     adoptPending: () => runtime.adoptPending(),
+    /**
+     * Engage protection now, whatever the score: one protection responder by id
+     * (e.g. 'responder.lockout'), or all of them when omitted. Only ever makes
+     * protection stronger; there is deliberately no host call that unlocks.
+     */
+    trigger: (responder = null) => runtime.emit('protection-trigger', { responder }),
   });
 }

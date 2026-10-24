@@ -56,6 +56,12 @@ try {
 // The way back for a person: at level 3, "I am a person — verify" runs WebAuthn step-up and restores
 // the page. Played here with a CDP virtual authenticator; the lab allows on-demand registration, which
 // is exactly why a real site must not (ADR 0005).
+// The lab keeps step-up credentials in memory. If an earlier run registered one, a fresh virtual
+// authenticator is expected to fail (it does not hold that credential) — report that, not a failure.
+const alreadyRegistered = await fetch(`${BASE}/api/step-up/assert/options`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' })
+  .then((res) => res.json())
+  .then((options) => options.registered === true)
+  .catch(() => false);
 const verifyBrowser = await chromium.launch({ headless: true });
 let human;
 try {
@@ -79,10 +85,43 @@ try {
   await verifyBrowser.close();
 }
 
+// The test controls: at level 0 nothing engages on its own; each button forces one layer.
+const triggerBrowser = await chromium.launch({ headless: true });
+const triggers = [];
+try {
+  for (const button of ['Banner', 'Lockout', 'Agent notice']) {
+    const context = await triggerBrowser.newContext();
+    const page = await context.newPage();
+    await page.goto(`${BASE}/apps/crm/contacts.html?level=0`);
+    await page.waitForTimeout(2000);
+    await page.locator('.test-controls button', { hasText: new RegExp(`^${button}$`) }).click();
+    await page.waitForTimeout(500);
+    triggers.push({
+      button,
+      ...(await page.evaluate((names) => ({
+        banner: Boolean(document.querySelector('[data-as-banner]')),
+        names: names.filter((n) => document.body.innerText.includes(n)).length,
+        onlyNotice: Boolean(document.querySelector('[data-as-notice]')) && document.body.children.length === 1,
+      }), NAMES)),
+    });
+    await context.close();
+  }
+} finally {
+  await triggerBrowser.close();
+}
+
 const yes = (v) => (v ? 'yes' : '·');
 console.log('| Page | Level | Banner | Names readable | IDs readable | Notice | Only the notice | Title |');
 console.log('| --- | :-: | :-: | :-: | :-: | :-: | :-: | --- |');
 for (const r of rows) {
   console.log(`| ${r.label} | ${r.level} | ${yes(r.banner)} | ${r.names} | ${r.ids} | ${yes(r.notice)} | ${yes(r.onlyNotice)} | ${r.title} |`);
 }
+console.log('\nTest controls (contacts page, level 0):');
+for (const t of triggers) console.log(`  ${t.button}: banner ${yes(t.banner)}, names readable ${t.names}/12, notice only ${yes(t.onlyNotice)}`);
 console.log(`\nVerify path (contact page, level 3, WebAuthn step-up): notice ${human.notice ? 'still shown' : 'gone'}, content ${human.nameVisible ? 'restored' : 'still hidden'}, title "${human.title}"`);
+if (alreadyRegistered) {
+  console.log(
+    '  A credential was already registered on the lab server, so this fresh virtual authenticator was expected to fail (as a real agent would).\n' +
+      '  Restart the lab server to test the registration + verify path.',
+  );
+}

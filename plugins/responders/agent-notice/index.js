@@ -12,7 +12,13 @@
  * protection itself is that the content is gone. Wording is the site's to set
  * (`heading`, `paragraphs`) — have it reviewed; don't assert legal claims that
  * are not true for your jurisdiction and terms.
+ *
+ * Manual trigger: a `protection-trigger` host event (handle.trigger(), e.g. the CRM's
+ * test controls) engages it at once, regardless of level and threshold. Only
+ * `human-verified` events sent by a protection responder can undo it — never host events.
  */
+const NO_RESULT = { score: 0, level: 'clean', contributors: [] };
+
 export default {
   id: 'responder.agent-notice',
   kind: 'responder',
@@ -52,36 +58,55 @@ export default {
       s.saved = null;
     };
     ctx.subscribe((event) => {
-      if (event.type !== 'human-verified') return;
-      s.verified = true;
-      s.restore();
+      if (event.type === 'human-verified' && fromResponder(event)) {
+        s.verified = true;
+        s.restore();
+      } else if (triggeredFor(event, ctx)) {
+        s.verified = false;
+        engage(ctx, s.lastResult ?? NO_RESULT, 'manual trigger');
+      }
     });
     ctx.onCleanup(() => s.restore());
   },
 
   onScore(result, ctx) {
-    const { state: s, config, document: doc } = ctx;
-    if (!s.ready || s.saved || s.verified || !doc?.body) return;
+    const { state: s, config } = ctx;
+    s.lastResult = result;
+    if (!s.ready || s.verified) return;
     if (pageLevel(ctx) < config.minLevel || result.score < threshold(ctx)) return;
-
-    const content = doc.createDocumentFragment();
-    while (doc.body.firstChild) content.append(doc.body.firstChild);
-    s.saved = { content, title: doc.title };
-    s.notice = buildNotice(ctx);
-    doc.body.append(s.notice);
-    if (config.documentTitle) doc.title = config.documentTitle;
-
-    // Keep the notice the only thing on the page: anything added to <body> later (the app, other
-    // plugins such as honeypots, an extension overlay) joins the hidden content and returns with it.
-    if (typeof ctx.window.MutationObserver === 'function') {
-      s.guard = new ctx.window.MutationObserver(() => {
-        for (const node of Array.from(doc.body.childNodes)) if (node !== s.notice) s.saved?.content.append(node);
-      });
-      s.guard.observe(doc.body, { childList: true });
-    }
-    ctx.log('notice-shown', { score: result.score, level: pageLevel(ctx), contributors: result.contributors.map((c) => c.id) });
+    engage(ctx, result, 'score');
   },
 };
+
+function engage(ctx, result, why) {
+  const { state: s, config, document: doc } = ctx;
+  if (!s.ready || s.saved || !doc?.body) return;
+  const content = doc.createDocumentFragment();
+  while (doc.body.firstChild) content.append(doc.body.firstChild);
+  s.saved = { content, title: doc.title };
+  s.notice = buildNotice(ctx);
+  doc.body.append(s.notice);
+  if (config.documentTitle) doc.title = config.documentTitle;
+
+  // Keep the notice the only thing on the page: anything added to <body> later (the app, other
+  // plugins such as honeypots, an extension overlay) joins the hidden content and returns with it.
+  if (typeof ctx.window.MutationObserver === 'function') {
+    s.guard = new ctx.window.MutationObserver(() => {
+      for (const node of Array.from(doc.body.childNodes)) if (node !== s.notice) s.saved?.content.append(node);
+    });
+    s.guard.observe(doc.body, { childList: true });
+  }
+  ctx.log('notice-shown', { why, score: result.score, level: pageLevel(ctx), contributors: result.contributors.map((c) => c.id) });
+}
+
+/** Host events may trigger protection; only a responder (after step-up) may announce human-verified. */
+function fromResponder(event) {
+  return typeof event.source === 'string' && event.source.startsWith('responder.');
+}
+
+function triggeredFor(event, ctx) {
+  return event.type === 'protection-trigger' && (event.data?.responder ?? ctx.id) === ctx.id;
+}
 
 function buildNotice(ctx) {
   const { document: doc, config } = ctx;
