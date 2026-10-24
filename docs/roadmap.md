@@ -1,0 +1,42 @@
+# Roadmap
+
+## Phase 0 — Lab (now)
+
+- [x] Core runtime: plugin contract, scoring, event log, DOM ownership, safe API observation
+- [x] 17 detectors from the handoff spec, `on-detected` stub responder, HTTP log sink
+- [x] Lab page and local server with JSON-lines log, honeypot and canary endpoints
+- [x] Contract checker, scaffolder, generated catalog, unit tests
+- [ ] Fill in the Claude for Chrome extension ID and a web-accessible path in `apps/lab/lab.config.js`
+- [ ] Single-file build (`dist/agent-lab.html`) for the original "one HTML file" deliverable: concatenate core and plugins (plugins have no imports, so this is a small script)
+
+## Phase 1 — Measurement
+
+- [ ] `tools/harness` workspace: Playwright, Puppeteer, stealth runs as scripts
+- [ ] Run the full [test plan](test-plan.md), including assistive-tech sessions
+- [ ] Results matrix in research.md; per-detector results in each README
+- [ ] Re-fit weights from labelled runs; make the scorer a plugin
+
+## Phase 2 — Signal lists and server side
+
+- [ ] `lists/` — versioned signal data (automation globals, stack markers, extension IDs, attribute patterns, renderer names), loaded by plugins instead of hard-coded defaults; separate review track like filter lists
+- [ ] `packages/server` — Node middleware: Web Bot Auth verification, header/TLS fingerprint capture, correlation with client sessions
+- [ ] Server-side canary scanning for form posts and support channels
+
+## Phase 3 — Responders
+
+- [ ] `responder.redact` — mask `[data-as-sensitive]` content above a threshold, reveal one field on demand
+- [ ] `responder.step-up` — require WebAuthn user verification before reveals
+- [ ] `responder.notify-server` — flag the session server-side
+- [ ] Policy: deny only on deterministic signals (see research.md §6)
+
+## Phase 4 — Embeddable SDK
+
+- [ ] `packages/embed` — script-tag/npm entry with a chosen plugin set, no global runtime handle
+- [ ] Framework integrations that claim rendered DOM (React, Vue, server-rendered pages)
+- [ ] Hardening: runtime integrity, tamper reporting, server verification of client results
+- [ ] Production pilot on one sensitive page, with a DPIA and an accessibility review
+
+## Open decisions
+
+- Licence (needed before outside contributors join)
+- Where exports from test runs are stored and who can see them

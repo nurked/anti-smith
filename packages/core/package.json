@@ -1,0 +1,10 @@
+{
+  "name": "@anti-smith/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plugin runtime, scoring and event log for anti-smith.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js"
+  }
+}

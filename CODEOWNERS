@@ -1,0 +1,14 @@
+# Folder ownership. Replace the placeholder teams with real handles before opening the repo to contributors.
+# Later rules win.
+
+*                         @anti-smith/maintainers
+/packages/                @anti-smith/core
+/apps/                    @anti-smith/core
+/tools/                   @anti-smith/core
+/docs/adr/                @anti-smith/core
+/docs/research.md         @anti-smith/research
+/docs/test-plan.md        @anti-smith/research
+
+# Plugins: add the author's handle per folder, e.g.
+# /plugins/detectors/mouse-dynamics/   @someone
+/plugins/                 @anti-smith/plugins

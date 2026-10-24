@@ -1,0 +1,20 @@
+{
+  "name": "anti-smith",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Site-side, plugin-based detection of browser automation and AI agents. Research lab first, defences later.",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node apps/lab/server.mjs",
+    "test": "node --test",
+    "check": "node tools/check-plugins.mjs",
+    "verify": "npm run check && npm test",
+    "new-plugin": "node tools/new-plugin.mjs"
+  }
+}

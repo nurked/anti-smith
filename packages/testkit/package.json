@@ -1,0 +1,10 @@
+{
+  "name": "@anti-smith/testkit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Helpers for unit-testing anti-smith plugins in Node with fake browser globals.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js"
+  }
+}

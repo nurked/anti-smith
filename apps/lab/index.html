@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Agent Detection Lab · anti-smith</title>
+    <link rel="stylesheet" href="./lab.css" />
+    <script type="module" src="./lab.js"></script>
+  </head>
+  <body>
+    <!--
+      Everything marked data-as-ignore is the lab's own UI: it re-renders all the
+      time, so the DOM-mutation detector skips it. The #testarea section is NOT
+      ignored — that is where agents are expected to act.
+    -->
+    <header class="topbar" data-as-ignore>
+      <div class="brand">
+        <strong>anti-smith</strong>
+        <span>Agent Detection Lab</span>
+        <span class="mode">detect-only · nothing is blocked</span>
+      </div>
+      <div class="score" id="score-box">
+        <span class="score-value" id="score">–</span>
+        <div>
+          <div class="score-level" id="level">starting…</div>
+          <div class="score-contributors" id="contributors"></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel span-2" data-as-ignore>
+        <div class="panel-head">
+          <h2>Detectors</h2>
+          <span class="muted" id="plugin-summary"></span>
+        </div>
+        <div id="load-errors"></div>
+        <div class="table-wrap">
+          <table class="findings">
+            <thead>
+              <tr>
+                <th>Detector</th>
+                <th>Weight</th>
+                <th>Status</th>
+                <th>Evidence</th>
+                <th>Updated</th>
+              </tr>
+            </thead>
+            <tbody id="findings"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" id="testarea">
+        <div class="panel-head">
+          <h2>Test area</h2>
+          <span class="muted">Fake data. Give the agent something to do here.</span>
+        </div>
+
+        <form id="login-form" class="card" autocomplete="off">
+          <h3>Sign in</h3>
+          <label>Username <input name="username" type="text" autocomplete="off" /></label>
+          <label>Password <input name="password" type="password" autocomplete="new-password" /></label>
+          <button type="submit">Sign in</button>
+          <span class="status" id="login-status" data-as-ignore></span>
+        </form>
+
+        <div class="card">
+          <h3>Actions</h3>
+          <div class="buttons">
+            <button type="button" data-action="approve">Approve transfer</button>
+            <button type="button" data-action="delete">Delete record</button>
+            <button type="button" data-action="export">Export CSV</button>
+          </div>
+          <span class="status" id="action-status" data-as-ignore></span>
+          <nav class="links">
+            <a href="#account">Account settings</a>
+            <a href="#statements">Statements</a>
+            <a href="#support">Contact support</a>
+          </nav>
+        </div>
+
+        <div class="card">
+          <h3>Customer records <span class="tag">sensitive</span></h3>
+          <div class="table-wrap">
+            <table class="records" id="records" data-as-sensitive>
+              <thead>
+                <tr><th>Name</th><th>Date of birth</th><th>National ID</th><th>Balance</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Avery Example</td><td>1984-03-12</td><td>000-12-3456</td><td>$12,480.22</td></tr>
+                <tr><td>Jordan Sample</td><td>1979-11-02</td><td>000-98-7654</td><td>$3,105.90</td></tr>
+                <tr><td>Riley Placeholder</td><td>1991-07-27</td><td>000-45-6789</td><td>$88,002.15</td></tr>
+                <tr><td>Morgan Testcase</td><td>1966-01-30</td><td>000-11-2233</td><td>$640.00</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Notes</h3>
+          <textarea id="notes" rows="4" placeholder="Type something here…"></textarea>
+        </div>
+      </section>
+
+      <section class="panel" data-as-ignore>
+        <div class="panel-head">
+          <h2>Event log</h2>
+          <span class="muted" id="event-count"></span>
+        </div>
+        <div class="log-controls">
+          <input id="run-label" type="text" placeholder="Run label, e.g. playwright-default" />
+          <button type="button" id="export">Export JSON</button>
+          <button type="button" id="clear" class="secondary">Clear</button>
+        </div>
+        <div class="log-controls">
+          <input id="log-filter" type="search" placeholder="Filter by source, type or data" />
+          <label class="inline"><input type="checkbox" id="hide-noise" checked /> hide raw events</label>
+        </div>
+        <ol class="events" id="events"></ol>
+      </section>
+
+      <section class="panel span-2" data-as-ignore>
+        <div class="panel-head">
+          <h2>What these detectors cannot see</h2>
+        </div>
+        <p class="muted">
+          Page-side detection is spoofable and blind to a lot. In particular: monkey-patching only sees scripts in the page's
+          main world, not extension content scripts in their isolated world; CDP-driven input (Playwright, Puppeteer,
+          chrome.debugger extensions) produces <code>isTrusted: true</code> events; pages cannot list installed extensions.
+          Use <code>?skip=detector.debugger-timing</code> to stop debugger pauses, <code>?only=&lt;id&gt;,&lt;id&gt;</code> to run a subset.
+        </p>
+        <div class="limitations" id="limitations"></div>
+      </section>
+    </main>
+  </body>
+</html>
