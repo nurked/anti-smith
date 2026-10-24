@@ -19,6 +19,7 @@ export default {
   title: 'Sensitive content reads',
   description: 'Watches main-world reads of elements marked sensitive (innerText/textContent/innerHTML, querySelectorAll, getSelection, createRange, copy).',
   weight: 'medium',
+  evidence: 'behaviour',
   phase: 'runtime',
   tags: ['scraping', 'dom', 'privacy'],
   lists: { stackMarkers: 'stack-markers' },

@@ -19,6 +19,7 @@ export default {
   title: 'CDP attached (console serialization)',
   description: 'Logs objects with getters via console.debug; if a getter fires without DevTools visibly docked, a protocol client is probably attached.',
   weight: 'medium',
+  evidence: 'environment',
   noisy: true,
   phase: 'runtime',
   tags: ['cdp', 'debugger', 'noisy'],

@@ -11,6 +11,7 @@ export default {
   title: 'Automation framework globals',
   description: 'Looks for window/document properties and attributes injected by Playwright, Puppeteer, ChromeDriver/Selenium, PhantomJS and Nightmare.',
   weight: 'strong',
+  evidence: 'deterministic',
   phase: 'static',
   tags: ['automation', 'playwright', 'puppeteer', 'selenium'],
   lists: { names: 'automation-globals.names', prefixes: 'automation-globals.prefixes', documentAttributes: 'automation-globals.documentAttributes' },

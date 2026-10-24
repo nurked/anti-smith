@@ -15,6 +15,7 @@ export default {
   title: 'Screenshot / emulation hints',
   description: 'Viewport-only resizes, requestAnimationFrame stalls near actions, and visibility changes during activity.',
   weight: 'weak',
+  evidence: 'environment',
   noisy: true,
   phase: 'runtime',
   tags: ['screenshot', 'cdp', 'noisy'],

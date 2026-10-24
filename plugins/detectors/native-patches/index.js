@@ -40,6 +40,7 @@ export default {
   title: 'Patched native functions',
   description: 'Finds built-ins whose source is not "[native code]", that disagree with a pristine iframe toString, or that have the wrong shape — the footprint of stealth plugins.',
   weight: 'medium',
+  evidence: 'environment',
   phase: 'static',
   tags: ['stealth', 'fingerprint'],
   limitations: [

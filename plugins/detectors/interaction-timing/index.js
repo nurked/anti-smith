@@ -14,6 +14,7 @@ export default {
   title: 'Interaction timing',
   description: 'Time to first interaction, regularity of action gaps, and long motionless pauses followed by instant actions.',
   weight: 'weak',
+  evidence: 'behaviour',
   phase: 'runtime',
   tags: ['behaviour', 'timing', 'llm'],
   limitations: [

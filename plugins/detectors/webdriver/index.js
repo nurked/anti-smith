@@ -9,6 +9,7 @@ export default {
   title: 'navigator.webdriver flag',
   description: 'Reports navigator.webdriver === true, and Chromium browsers where the property has been deleted (a stealth-plugin habit).',
   weight: 'strong',
+  evidence: 'deterministic',
   phase: 'static',
   tags: ['automation', 'webdriver', 'stealth'],
   limitations: [

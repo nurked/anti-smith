@@ -13,6 +13,7 @@ export default {
   title: 'Focus, scroll and hidden-tab input',
   description: 'Programmatic focus, unexplained scrolling, and input delivered while the page is hidden or unfocused.',
   weight: 'medium',
+  evidence: 'behaviour',
   phase: 'runtime',
   tags: ['behaviour', 'focus', 'scroll'],
   limitations: [

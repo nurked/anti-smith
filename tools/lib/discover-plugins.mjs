@@ -2,7 +2,7 @@ import { readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 /** Folder name under plugins/ for each plugin kind. */
-export const KIND_FOLDERS = { detector: 'detectors', responder: 'responders', sink: 'sinks' };
+export const KIND_FOLDERS = { detector: 'detectors', responder: 'responders', sink: 'sinks', scorer: 'scorers' };
 
 /**
  * Finds every plugin entry point: plugins/<kind folder>/<name>/index.js.

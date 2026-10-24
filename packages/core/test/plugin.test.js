@@ -9,6 +9,7 @@ const detector = () => ({
   title: 'Example',
   description: 'Example detector.',
   weight: 'weak',
+  evidence: 'behaviour',
   limitations: ['Example only.'],
   start() {},
 });

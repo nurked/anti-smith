@@ -11,6 +11,10 @@ import { fileURLToPath } from 'node:url';
 import { KIND_FOLDERS } from './lib/discover-plugins.mjs';
 
 const [kind, name] = process.argv.slice(2);
+if (kind === 'scorer') {
+  console.error('Scorers are rare; copy plugins/scorers/evidence-classes instead.');
+  process.exit(1);
+}
 if (!KIND_FOLDERS[kind] || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name ?? '')) {
   console.error('Usage: npm run new-plugin -- <detector|responder|sink> <kebab-name>');
   process.exit(1);
@@ -31,6 +35,7 @@ const title = name.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase());
 
 const bodies = {
   detector: `  weight: 'weak', // strong | medium | weak — start weak, raise it once test runs justify it
+  evidence: 'behaviour', // deterministic | environment | behaviour — see docs/plugin-api.md
   phase: 'runtime', // static (runs once) | runtime (keeps watching)
   tags: [],
   limitations: ['TODO: what this misses and what it falsely flags.'],

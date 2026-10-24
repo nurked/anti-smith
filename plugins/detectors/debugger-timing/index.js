@@ -12,6 +12,7 @@ export default {
   title: 'Debugger pause timing',
   description: 'Times a debugger statement; a long gap means a debugger with active breakpoints is attached.',
   weight: 'weak',
+  evidence: 'environment',
   noisy: true,
   phase: 'runtime',
   tags: ['cdp', 'debugger', 'noisy'],

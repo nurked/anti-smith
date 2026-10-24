@@ -13,6 +13,7 @@ export default {
   title: 'Foreign DOM changes',
   description: 'MutationObserver over the whole document: injected nodes, scripts, styles, iframes, shadow roots and suspicious attributes the page did not create.',
   weight: 'medium',
+  evidence: 'environment',
   phase: 'runtime',
   tags: ['dom', 'extension', 'overlay'],
   lists: { attributePatterns: 'dom-attribute-patterns' },

@@ -6,7 +6,7 @@ import { captureNatives, isNativeFunction } from './natives.js';
 import { createOwnership } from './ownership.js';
 import { describeNode } from './describe.js';
 
-const START_ORDER = ['sink', 'responder', 'detector'];
+const START_ORDER = ['scorer', 'sink', 'responder', 'detector'];
 
 /**
  * Creates an anti-smith runtime.
@@ -21,7 +21,8 @@ const START_ORDER = ['sink', 'responder', 'detector'];
  * @param {object}   [options.lists]   Signal lists, { [name]: { version, data } } (see lists/README.md)
  * @param {object}   [options.window]  Defaults to the global window. Tests pass fakes.
  * @param {object}   [options.document]
- * @param {Function} [options.scorer]  (findings, scoringConfig) => { score, level, contributors }
+ * @param {Function} [options.scorer]  (findings, scoringConfig) => { score, level, contributors }.
+ *                                     An enabled `scorer` plugin takes precedence; this is the fallback.
  * @param {Function} [options.now]     Clock override for tests.
  */
 export function createRuntime(options = {}) {
@@ -70,6 +71,7 @@ export function createRuntime(options = {}) {
       status,
       weight,
       noisy: Boolean(plugin.noisy),
+      evidenceClass: plugin.evidence ?? null,
       evidence: input.evidence ?? null,
       reports: (previous?.reports ?? 0) + 1,
       updatedAt: elapsed(),
@@ -83,8 +85,18 @@ export function createRuntime(options = {}) {
     return next;
   }
 
+  /** The first enabled scorer plugin decides; if it throws or returns nonsense, the built-in scorer does. */
+  function computeScore(list) {
+    const plugin = active.find((p) => p.kind === 'scorer');
+    if (plugin) {
+      const result = guard(plugin, 'score', () => plugin.score(list, contexts.get(plugin.id)));
+      if (result && typeof result.score === 'number' && typeof result.level === 'string' && Array.isArray(result.contributors)) return result;
+    }
+    return scorer(list, config.scoring);
+  }
+
   function rescore() {
-    score = scorer([...findings.values()], config.scoring);
+    score = computeScore([...findings.values()]);
     for (const plugin of active) {
       if (plugin.kind !== 'responder') continue;
       const ctx = contexts.get(plugin.id);
@@ -309,6 +321,8 @@ export function createRuntime(options = {}) {
     const all = registry.list();
     active = START_ORDER.flatMap((kind) => all.filter((p) => p.kind === kind && isEnabled(p)));
     const disabled = all.filter((p) => !isEnabled(p)).map((p) => p.id);
+    const scorers = active.filter((p) => p.kind === 'scorer');
+    if (scorers.length > 1) log.push('core', 'scorer.conflict', { using: scorers[0].id, ignored: scorers.slice(1).map((p) => p.id) });
     for (const plugin of active) contexts.set(plugin.id, makeContext(plugin));
 
     // Sinks subscribe first so they also receive everything logged during start-up.
@@ -333,6 +347,7 @@ export function createRuntime(options = {}) {
           status: STATUS.PENDING,
           weight: plugin.weight,
           noisy: Boolean(plugin.noisy),
+          evidenceClass: plugin.evidence ?? null,
           evidence: null,
           reports: 0,
           updatedAt: elapsed(),

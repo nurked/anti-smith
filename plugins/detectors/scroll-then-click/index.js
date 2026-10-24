@@ -14,6 +14,7 @@ export default {
   title: 'Scroll-into-view then click',
   description: 'A scroll with no wheel, touch, key or pointer input behind it, followed by a click within a few hundred milliseconds.',
   weight: 'weak',
+  evidence: 'behaviour',
   phase: 'runtime',
   tags: ['behaviour', 'scroll', 'cdp'],
   limitations: [

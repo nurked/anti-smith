@@ -18,6 +18,7 @@ export default {
   title: 'Agent extension probe',
   description: 'Tries to load configured chrome-extension:// resources to see whether known agent extensions are installed.',
   weight: 'medium',
+  evidence: 'environment',
   phase: 'static',
   tags: ['extension', 'fingerprint'],
   lists: { extensions: 'agent-extensions' },

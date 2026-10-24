@@ -11,6 +11,7 @@ export default {
   title: 'Notification permission consistency',
   description: 'Compares Notification.permission with navigator.permissions.query({ name: "notifications" }).',
   weight: 'medium',
+  evidence: 'environment',
   phase: 'static',
   tags: ['headless', 'fingerprint'],
   limitations: [

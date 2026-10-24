@@ -11,6 +11,7 @@ const detector = (status) => ({
   title: 'Fixed',
   description: 'Reports what the test tells it to.',
   weight: 'strong',
+  evidence: 'deterministic',
   limitations: ['test'],
   start: (ctx) => ctx.report({ status }),
 });

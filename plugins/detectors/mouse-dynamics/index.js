@@ -13,6 +13,7 @@ export default {
   title: 'Mouse dynamics before clicks',
   description: 'Per click: number of moves, hover on target, path straightness, exact-centre hit, integer coordinates.',
   weight: 'medium',
+  evidence: 'behaviour',
   phase: 'runtime',
   tags: ['behaviour', 'mouse'],
   limitations: [

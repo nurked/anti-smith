@@ -9,7 +9,7 @@
  */
 
 /** The plugin kinds. A plugin id is always prefixed with its kind. */
-export const KINDS = Object.freeze(['detector', 'responder', 'sink']);
+export const KINDS = Object.freeze(['detector', 'responder', 'sink', 'scorer']);
 
 /** Detector statuses. */
 export const STATUS = Object.freeze({
@@ -34,7 +34,15 @@ export const STATUS_RANK = Object.freeze({
 /** How much a detector's verdict counts towards the score. */
 export const WEIGHTS = Object.freeze(['strong', 'medium', 'weak']);
 
-const ID_PATTERN = /^(detector|responder|sink)\.[a-z0-9]+(?:-[a-z0-9]+)*$/;
+/**
+ * What kind of evidence a detector produces (ADR 0005):
+ *  - deterministic: people essentially never produce it (webdriver flag, honeypot touched, synthetic events)
+ *  - environment:   how the browser is set up (headless signs, patched natives, extensions installed)
+ *  - behaviour:     how input arrives (mouse, keyboard, timing) — overlaps with assistive technology
+ */
+export const EVIDENCE = Object.freeze(['deterministic', 'environment', 'behaviour']);
+
+const ID_PATTERN = /^(detector|responder|sink|scorer)\.[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const SEMVER_PATTERN = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 /** "<list-name>" or "<list-name>.<key>[.<key>…]" — see lists/README.md. */
 export const LIST_PATH_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\.[A-Za-z0-9_]+)*$/;
@@ -86,12 +94,16 @@ export function validatePlugin(plugin) {
     if (!isStringArray(plugin.limitations) || plugin.limitations.length === 0) {
       problems.push('detectors must list at least one limitation');
     }
+    if (!EVIDENCE.includes(plugin.evidence)) problems.push(`evidence must be one of ${EVIDENCE.join(', ')}`);
   }
   if (kind === 'responder' && typeof plugin.onScore !== 'function') {
     problems.push('responders must implement onScore(result, ctx)');
   }
   if (kind === 'sink' && typeof plugin.onEvent !== 'function') {
     problems.push('sinks must implement onEvent(event, ctx)');
+  }
+  if (kind === 'scorer' && typeof plugin.score !== 'function') {
+    problems.push('scorers must implement score(findings, ctx)');
   }
   return problems;
 }

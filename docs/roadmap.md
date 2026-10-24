@@ -14,7 +14,8 @@
 - [ ] Harness runs for patched Playwright forks and other anti-detect browsers
 - [ ] Run the full [test plan](test-plan.md), including assistive-tech sessions
 - [ ] Results matrix in research.md; per-detector results in each README
-- [ ] Re-fit weights from labelled runs; make the scorer a plugin
+- [x] Scorer is a plugin kind; `scorer.evidence-classes` adds deterministic / environment / behaviour breakdown (ADR 0005)
+- [ ] Re-fit weights from labelled runs (needs human and assistive-tech sessions)
 
 ## Phase 2 — Signal lists and server side
 

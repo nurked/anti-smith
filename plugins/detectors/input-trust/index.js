@@ -13,6 +13,7 @@ export default {
   title: 'Untrusted (synthetic) events',
   description: 'Records isTrusted for clicks, keys, input, focus, submit and pointer events; any untrusted user event is a script pretending to be a user.',
   weight: 'strong',
+  evidence: 'deterministic',
   phase: 'runtime',
   tags: ['behaviour', 'events'],
   limitations: [

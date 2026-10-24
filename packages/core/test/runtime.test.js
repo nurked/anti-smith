@@ -8,7 +8,7 @@ const meta = (id, kind, extra = {}) => ({
   version: '0.1.0',
   title: id,
   description: `${id} test plugin`,
-  ...(kind === 'detector' ? { weight: 'strong', limitations: ['test'] } : {}),
+  ...(kind === 'detector' ? { weight: 'strong', evidence: 'deterministic', limitations: ['test'] } : {}),
   ...extra,
 });
 

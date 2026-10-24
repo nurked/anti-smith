@@ -9,6 +9,7 @@ export default {
   title: 'Headless browser signs',
   description: 'HeadlessChrome in UA or client hints, values no real browser produces (non-ANGLE WebGL on desktop Chromium, invalid client-hint platform), empty plugins/languages, UA vs client-hint mismatch, software WebGL, zero outer window size, missing window.chrome.',
   weight: 'medium',
+  evidence: 'environment',
   phase: 'static',
   tags: ['headless', 'fingerprint'],
   lists: { softRenderers: 'software-renderers' },

@@ -86,10 +86,12 @@ function render() {
   renderLog(runtime.log.all());
 }
 
-function renderScore({ score, level, contributors }) {
+function renderScore({ score, level, contributors, deterministic, behaviourOnly }) {
   $('score').textContent = String(score);
   const levelEl = $('level');
-  levelEl.textContent = level.replace('-', ' ');
+  // Evidence classes come from scorer.evidence-classes (ADR 0005); the built-in scorer leaves them undefined.
+  const basis = deterministic ? ' · deterministic' : behaviourOnly ? ' · behaviour only' : '';
+  levelEl.textContent = level.replace('-', ' ') + basis;
   levelEl.className = `score-level level-${level}`;
   $('contributors').textContent = contributors.length
     ? contributors.map((c) => `${c.id.replace('detector.', '')} +${c.points}${c.noisy ? ' (noisy)' : ''}`).join(' · ')

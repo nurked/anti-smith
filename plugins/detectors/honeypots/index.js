@@ -18,6 +18,7 @@ export default {
   title: 'Honeypots and canary token',
   description: 'Hidden link, button and input that people cannot reach; any interaction, or a filled trap field, means something is acting on the raw DOM.',
   weight: 'strong',
+  evidence: 'deterministic',
   phase: 'runtime',
   tags: ['honeypot', 'canary', 'dom'],
   limitations: [

@@ -16,6 +16,7 @@ export default {
   title: 'Keyboard dynamics',
   description: 'Inter-key interval variance, and text inserted through input events without a preceding keydown.',
   weight: 'medium',
+  evidence: 'behaviour',
   phase: 'runtime',
   tags: ['behaviour', 'keyboard'],
   limitations: [
