@@ -19,8 +19,9 @@
 ## Phase 2 — Signal lists and server side
 
 - [x] `lists/` — versioned signal data (automation globals, stack markers, agent extensions, attribute patterns, renderer names) feeding plugin config; own owners and checks
-- [ ] `packages/server` — Node middleware: Web Bot Auth verification, header/TLS fingerprint capture, correlation with client sessions
-- [ ] Server-side canary scanning for form posts and support channels
+- [x] `packages/server` — Web Bot Auth verification (RFC 9421, Ed25519), request signals (header order, client hints, Fetch Metadata, edge TLS fingerprint headers), agent user-agent list, session correlation; the lab server runs on it
+- [ ] Test Web Bot Auth against a real signed agent; verify directory signatures; nonce replay protection
+- [x] Server-side canary scanning: every request URL is scanned and hits are linked to the session that planted the token (`createCanaryScanner().scanValue` for form posts and tickets)
 
 ## Phase 3 — Responders
 

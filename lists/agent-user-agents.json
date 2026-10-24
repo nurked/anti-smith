@@ -1,0 +1,21 @@
+{
+  "name": "agent-user-agents",
+  "version": "2026.10.24",
+  "description": "User-agent patterns of AI agents, crawlers, automation and HTTP libraries, checked server-side. kind: agent (acts for a user), crawler (indexes or trains), automation (headless/framework), library (raw HTTP client).",
+  "data": [
+    { "pattern": "HeadlessChrome", "name": "Headless Chrome", "kind": "automation" },
+    { "pattern": "\\bClaude/\\d", "name": "Claude desktop embedded browser", "kind": "agent" },
+    { "pattern": "Claude-User", "name": "Claude user-initiated fetch", "kind": "agent" },
+    { "pattern": "ClaudeBot|anthropic-ai", "name": "Anthropic crawler", "kind": "crawler" },
+    { "pattern": "ChatGPT-User", "name": "ChatGPT user-initiated fetch", "kind": "agent" },
+    { "pattern": "GPTBot|OAI-SearchBot", "name": "OpenAI crawler", "kind": "crawler" },
+    { "pattern": "Perplexity-User", "name": "Perplexity user-initiated fetch", "kind": "agent" },
+    { "pattern": "PerplexityBot", "name": "Perplexity crawler", "kind": "crawler" },
+    { "pattern": "Google-Extended|GoogleOther", "name": "Google AI crawler", "kind": "crawler" },
+    { "pattern": "CCBot", "name": "Common Crawl", "kind": "crawler" },
+    { "pattern": "python-requests|aiohttp|httpx", "name": "Python HTTP library", "kind": "library" },
+    { "pattern": "^curl/|Wget/", "name": "Command-line HTTP client", "kind": "library" },
+    { "pattern": "Go-http-client", "name": "Go HTTP library", "kind": "library" },
+    { "pattern": "node-fetch|undici|axios", "name": "Node HTTP library", "kind": "library" }
+  ]
+}
