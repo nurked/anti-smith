@@ -21,7 +21,7 @@ Task script (same for every run, so runs are comparable): sign in with any made-
 | 3 | Playwright, defaults | Class B | See harness sketch below |
 | 4 | Playwright + stealth (or a patched fork) | Class C | Record which kit and version |
 | 5 | Puppeteer | Class B | |
-| 6 | Claude for Chrome performing the task | Class D | First two sessions done 2026-10-24, see research.md §4. Extension ID still to fill into `lab.config.js`. |
+| 6 | Claude for Chrome performing the task | Class D | First two sessions done 2026-10-24, see research.md §4. Extension probe configured. |
 | 7 | Other AI browsers / agents available | Classes D–F | Record product and version |
 | 8 | Assistive tech: macOS Voice Control, Windows Voice Access, a screen reader, switch access | False positives that matter most | Must be done before any responder adds friction |
 | 9 | Claude desktop in-app browser | Embedded-agent baseline | First run done 2026-10-24, see research.md §4 |

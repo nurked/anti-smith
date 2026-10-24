@@ -23,9 +23,11 @@ export default {
       extensions: [
         {
           name: 'Claude for Chrome',
-          extensionId: '',
-          resourcePath: '',
-          note: 'TODO: fill in from chrome://extensions (ID) and the manifest (a web_accessible_resources path)',
+          // From chrome://extensions, version 1.0.102 (2026-10-24).
+          extensionId: 'fcoeoabgfenejglbffodgkkbkcdhcgfn',
+          // web_accessible_resources for <all_urls>, use_dynamic_url: false (manifest of 1.0.102).
+          // File names carry build hashes and will change with releases; update from the manifest.
+          resourcePaths: ['assets/agent-visual-indicator.js-uaVFxZ2f.js', 'assets/accessibility-tree.js-B-oUarrX.js'],
         },
       ],
     },

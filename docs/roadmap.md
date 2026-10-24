@@ -6,7 +6,7 @@
 - [x] 18 detectors (17 from the handoff spec, plus scroll-then-click from the Claude in Chrome run), `on-detected` stub responder, HTTP log sink
 - [x] Lab page and local server with JSON-lines log, honeypot and canary endpoints
 - [x] Contract checker, scaffolder, generated catalog, unit tests
-- [ ] Fill in the Claude for Chrome extension ID and a web-accessible path in `apps/lab/lab.config.js`
+- [x] Claude for Chrome extension ID and web-accessible paths configured (refresh the hashed paths on each release)
 - [ ] Single-file build (`dist/agent-lab.html`) for the original "one HTML file" deliverable: concatenate core and plugins (plugins have no imports, so this is a small script)
 
 ## Phase 1 — Measurement

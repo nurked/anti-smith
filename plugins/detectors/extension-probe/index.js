@@ -5,8 +5,9 @@
  * chrome-extension://<id>/<path>; it only succeeds when the extension is
  * installed and lists that path in web_accessible_resources for this origin.
  *
- * Ships with a placeholder for Claude for Chrome: fill in the ID and a
- * web-accessible path (from the extension's manifest) in the lab config.
+ * Ships with Claude for Chrome (1.0.102): it exposes two content-script files
+ * to every site with use_dynamic_url: false. Their names include build hashes,
+ * so `resourcePaths` must be refreshed from the manifest when the extension updates.
  */
 const IMAGE_PATH = /\.(?:png|jpe?g|gif|svg|webp|ico)$/i;
 
@@ -29,9 +30,9 @@ export default {
     extensions: [
       {
         name: 'Claude for Chrome',
-        extensionId: '',
-        resourcePath: '',
-        note: 'TODO: fill in the extension ID and a web_accessible_resources path from its manifest',
+        extensionId: 'fcoeoabgfenejglbffodgkkbkcdhcgfn',
+        // Listed for <all_urls> in 1.0.102. Hashed names change between releases.
+        resourcePaths: ['assets/agent-visual-indicator.js-uaVFxZ2f.js', 'assets/accessibility-tree.js-B-oUarrX.js'],
       },
     ],
   },
@@ -42,15 +43,19 @@ export default {
       return ctx.report({ status: 'unsupported', evidence: { reason: 'not a Chromium browser' } });
     }
     const entries = config.extensions ?? [];
-    const ready = entries.filter((e) => e.extensionId && e.resourcePath);
-    const placeholders = entries.filter((e) => !e.extensionId || !e.resourcePath).map((e) => e.name);
+    const pathsOf = (e) => (e.resourcePaths ?? [e.resourcePath]).filter(Boolean);
+    const ready = entries.filter((e) => e.extensionId && pathsOf(e).length);
+    const placeholders = entries.filter((e) => !e.extensionId || !pathsOf(e).length).map((e) => e.name);
 
     if (!ready.length) {
       return ctx.report({ status: 'clean', evidence: { probed: 0, placeholders, note: 'no extension IDs configured yet' } });
     }
-    const results = await Promise.all(ready.map((entry) => probe(win, entry, config.timeoutMs)));
+    // Each extension may list several paths (hashed build names change between releases): installed if any loads.
+    const results = await Promise.all(
+      ready.flatMap((entry) => pathsOf(entry).map((resourcePath) => probe(win, { ...entry, resourcePath }, config.timeoutMs))),
+    );
     for (const result of results) ctx.log('probe', result);
-    const found = results.filter((r) => r.loaded).map((r) => r.name);
+    const found = [...new Set(results.filter((r) => r.loaded).map((r) => r.name))];
     return ctx.report({ status: found.length ? 'detected' : 'clean', evidence: { found, results, placeholders } });
   },
 };

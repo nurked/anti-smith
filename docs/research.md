@@ -123,7 +123,16 @@ The extension driving the lab in a normal, signed-in Google Chrome (Chrome 156, 
 | Silent | `webdriver`, `automation-globals`, `native-patches`, `cdp-console`, `sensitive-reads`, `capture-hints` | same |
 | Score | 70, likely agent | 25 before the trap → 65 after |
 
-Takeaways: the extension leaves a DOM footprint on every page (the empty `<div>`), types at machine speed, clicks element centres after scrolling them into view, and will act on elements that are hidden from assistive technology when a task leads it there. Reading the page (the sensitive table) left no trace in the main world, as expected. The extension ID is still unknown — the sandbox blocked reading Chrome's profile folder — so `extension-probe` remains unconfigured.
+Takeaways: the extension leaves a DOM footprint on every page (the empty `<div>`), types at machine speed, clicks element centres after scrolling them into view, and will act on elements that are hidden from assistive technology when a task leads it there. Reading the page (the sensitive table) left no trace in the main world, as expected.
+
+**What the manifest says (Claude 1.0.102, ID `fcoeoabgfenejglbffodgkkbkcdhcgfn`).** It confirms most of the above:
+
+- `permissions` include `debugger` → input and screenshots through CDP, hence trusted events everywhere.
+- Content script `accessibility-tree.js` runs on `<all_urls>`, `all_frames`, at `document_start` → the page is read from an isolated world, invisible to `sensitive-reads`.
+- Content script `agent-visual-indicator.js` runs on `<all_urls>` at `document_idle` → almost certainly the empty `<div>` host `dom-mutations` sees on every page.
+- `web_accessible_resources` exposes both of those scripts to **every site** with `use_dynamic_url: false` → any page can `fetch()` them to learn the extension is installed. `extension-probe` now does this and reports **detected** in ~2 ms; a browser without the extension reports clean. The file names carry build hashes, so the configured paths must be refreshed on each extension release (a good fit for the planned `lists/`).
+
+Caveat: installed is not active. This tells a site that the person *could* hand the page to an agent, not that one is acting now — combine it with the behavioural signals before responding.
 
 ## 5. Beyond the page: the layers that actually hold
 
